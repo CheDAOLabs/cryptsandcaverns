@@ -432,7 +432,11 @@ export default {
       console.log("status", status);
     },
     async connect() {
-      const a = await connect();
+      const a = await connect({
+        modalMode:"alwaysAsk",
+        modalTheme:"dark",
+        chainId:"SN_GOERLI"
+      });
       console.log(a.account);
       this.wallet_address = a.account.address;
       console.log(this.wallet_address)
