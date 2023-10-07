@@ -1,16 +1,284 @@
 <template>
-  <div id="app" v-loading="loading">
-    <!--    <img alt="Vue logo" src="./assets/logo.png">-->
-    <p1>{{ name }}</p1>
-    <pre>{{ dungeon_string }}</pre>
-    <div v-html="svg"></div>
+  <div id="app">
+
+    <el-card v-loading="loading" class="box-card" style="width: 400px;margin-left: auto;margin-right: auto;margin-top: 50px">
+      <template #header>
+        <div class="card-header">
+          <span style="font-size: 30px">C&C Exsample</span>
+          <el-button class="button" plain type="primary" @click="connect">Connect Wallet</el-button>
+        </div>
+      </template>
+<!--      <div style="float: right;margin-top: 10px;margin-right: 10px">-->
+<!--        <el-button type="primary" plain @click="connect">Connect Wallet</el-button>-->
+<!--      </div>-->
+<!--      <div style="clear: both"></div>-->
+<!--      <br/>-->
+<!--      <br/>-->
+      <!--    <img alt="Vue logo" src="./assets/logo.png">-->
+      <div style="color: white;font-size: 24px;font-family: VT323">{{ name }}</div>
+      <div class="container" style="background-color: white">
+        <pre style="color: black">{{ dungeon_string }}</pre>
+      </div>
+      <div class="container" style="background-color: red;margin-top: 10px">
+        <div v-html="svg"></div>
+      </div>
+      <div style="margin-top: 10px">
+        <el-button type="danger" plain @click="mint">MINT</el-button>
+      </div>
+    </el-card>
+
+
+
   </div>
 </template>
 
 <script>
-// import HelloWorld from './components/HelloWorld.vue'
+import {ElMessage} from 'element-plus'
 import {Contract, constants, Provider, shortString} from "starknet";
-// import BigInt from "BigInt";
+import {connect} from "@argent/get-starknet"
+
+const abi = [
+  {
+    "name": "mint",
+    "type": "function",
+    "inputs": [],
+    "outputs": [
+      {
+        "type": "core::integer::u128"
+      }
+    ],
+    "state_mutability": "external"
+  },
+  {
+    "name": "core::integer::u256",
+    "type": "struct",
+    "members": [
+      {
+        "name": "low",
+        "type": "core::integer::u128"
+      },
+      {
+        "name": "high",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "name": "get_seeds",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "token_id",
+        "type": "core::integer::u128"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "core::integer::u256"
+      }
+    ],
+    "state_mutability": "view"
+  },
+  {
+    "name": "core::array::Span::<core::felt252>",
+    "type": "struct",
+    "members": [
+      {
+        "name": "snapshot",
+        "type": "@core::array::Array::<core::felt252>"
+      }
+    ]
+  },
+  {
+    "name": "token_URI_not_work_yet",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "token_id",
+        "type": "core::integer::u128"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "core::array::Span::<core::felt252>"
+      }
+    ],
+    "state_mutability": "view"
+  },
+  {
+    "name": "get_svg",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "token_id",
+        "type": "core::integer::u128"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "core::array::Array::<core::felt252>"
+      }
+    ],
+    "state_mutability": "view"
+  },
+  {
+    "name": "cc_map::utils::pack::Pack",
+    "type": "struct",
+    "members": [
+      {
+        "name": "first",
+        "type": "core::felt252"
+      },
+      {
+        "name": "second",
+        "type": "core::felt252"
+      },
+      {
+        "name": "third",
+        "type": "core::felt252"
+      }
+    ]
+  },
+  {
+    "name": "core::array::Span::<core::integer::u8>",
+    "type": "struct",
+    "members": [
+      {
+        "name": "snapshot",
+        "type": "@core::array::Array::<core::integer::u8>"
+      }
+    ]
+  },
+  {
+    "name": "cc_map::Dungeons::EntityData",
+    "type": "struct",
+    "members": [
+      {
+        "name": "x",
+        "type": "core::array::Span::<core::integer::u8>"
+      },
+      {
+        "name": "y",
+        "type": "core::array::Span::<core::integer::u8>"
+      },
+      {
+        "name": "entity_data",
+        "type": "core::array::Span::<core::integer::u8>"
+      }
+    ]
+  },
+  {
+    "name": "cc_map::Dungeons::DungeonSerde",
+    "type": "struct",
+    "members": [
+      {
+        "name": "size",
+        "type": "core::integer::u8"
+      },
+      {
+        "name": "environment",
+        "type": "core::integer::u8"
+      },
+      {
+        "name": "structure",
+        "type": "core::integer::u8"
+      },
+      {
+        "name": "legendary",
+        "type": "core::integer::u8"
+      },
+      {
+        "name": "layout",
+        "type": "cc_map::utils::pack::Pack"
+      },
+      {
+        "name": "entities",
+        "type": "cc_map::Dungeons::EntityData"
+      },
+      {
+        "name": "affinity",
+        "type": "core::felt252"
+      },
+      {
+        "name": "dungeon_name",
+        "type": "core::array::Span::<core::felt252>"
+      }
+    ]
+  },
+  {
+    "name": "generate_dungeon",
+    "type": "function",
+    "inputs": [
+      {
+        "name": "token_id",
+        "type": "core::integer::u128"
+      }
+    ],
+    "outputs": [
+      {
+        "type": "cc_map::Dungeons::DungeonSerde"
+      }
+    ],
+    "state_mutability": "view"
+  },
+  {
+    "name": "constructor",
+    "type": "constructor",
+    "inputs": []
+  },
+  {
+    "kind": "struct",
+    "name": "cc_map::Dungeons::Minted",
+    "type": "event",
+    "members": [
+      {
+        "kind": "key",
+        "name": "account",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "kind": "data",
+        "name": "token_id",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "kind": "struct",
+    "name": "cc_map::Dungeons::Claimed",
+    "type": "event",
+    "members": [
+      {
+        "kind": "key",
+        "name": "account",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "kind": "data",
+        "name": "token_id",
+        "type": "core::integer::u128"
+      }
+    ]
+  },
+  {
+    "kind": "enum",
+    "name": "cc_map::Dungeons::Event",
+    "type": "event",
+    "variants": [
+      {
+        "kind": "nested",
+        "name": "Minted",
+        "type": "cc_map::Dungeons::Minted"
+      },
+      {
+        "kind": "nested",
+        "name": "Claimed",
+        "type": "cc_map::Dungeons::Claimed"
+      }
+    ]
+  }
+];
+const address = "0x0019965eaf48c49d298a9a60423a6322c0b17443325a59832d65f0ac716364d2";
 
 export default {
   name: 'App',
@@ -20,263 +288,24 @@ export default {
   mounted() {
     const provider = new Provider({sequencer: {network: constants.NetworkName.SN_GOERLI}});
     console.log("provider", provider);
-    const abi = [
-      {
-        "name": "mint",
-        "type": "function",
-        "inputs": [],
-        "outputs": [
-          {
-            "type": "core::integer::u128"
-          }
-        ],
-        "state_mutability": "external"
-      },
-      {
-        "name": "core::integer::u256",
-        "type": "struct",
-        "members": [
-          {
-            "name": "low",
-            "type": "core::integer::u128"
-          },
-          {
-            "name": "high",
-            "type": "core::integer::u128"
-          }
-        ]
-      },
-      {
-        "name": "get_seeds",
-        "type": "function",
-        "inputs": [
-          {
-            "name": "token_id",
-            "type": "core::integer::u128"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "name": "core::array::Span::<core::felt252>",
-        "type": "struct",
-        "members": [
-          {
-            "name": "snapshot",
-            "type": "@core::array::Array::<core::felt252>"
-          }
-        ]
-      },
-      {
-        "name": "token_URI_not_work_yet",
-        "type": "function",
-        "inputs": [
-          {
-            "name": "token_id",
-            "type": "core::integer::u128"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::array::Span::<core::felt252>"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "name": "get_svg",
-        "type": "function",
-        "inputs": [
-          {
-            "name": "token_id",
-            "type": "core::integer::u128"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::array::Array::<core::felt252>"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "name": "cc_map::utils::pack::Pack",
-        "type": "struct",
-        "members": [
-          {
-            "name": "first",
-            "type": "core::felt252"
-          },
-          {
-            "name": "second",
-            "type": "core::felt252"
-          },
-          {
-            "name": "third",
-            "type": "core::felt252"
-          }
-        ]
-      },
-      {
-        "name": "core::array::Span::<core::integer::u8>",
-        "type": "struct",
-        "members": [
-          {
-            "name": "snapshot",
-            "type": "@core::array::Array::<core::integer::u8>"
-          }
-        ]
-      },
-      {
-        "name": "cc_map::Dungeons::EntityData",
-        "type": "struct",
-        "members": [
-          {
-            "name": "x",
-            "type": "core::array::Span::<core::integer::u8>"
-          },
-          {
-            "name": "y",
-            "type": "core::array::Span::<core::integer::u8>"
-          },
-          {
-            "name": "entity_data",
-            "type": "core::array::Span::<core::integer::u8>"
-          }
-        ]
-      },
-      {
-        "name": "cc_map::Dungeons::DungeonSerde",
-        "type": "struct",
-        "members": [
-          {
-            "name": "size",
-            "type": "core::integer::u8"
-          },
-          {
-            "name": "environment",
-            "type": "core::integer::u8"
-          },
-          {
-            "name": "structure",
-            "type": "core::integer::u8"
-          },
-          {
-            "name": "legendary",
-            "type": "core::integer::u8"
-          },
-          {
-            "name": "layout",
-            "type": "cc_map::utils::pack::Pack"
-          },
-          {
-            "name": "entities",
-            "type": "cc_map::Dungeons::EntityData"
-          },
-          {
-            "name": "affinity",
-            "type": "core::felt252"
-          },
-          {
-            "name": "dungeon_name",
-            "type": "core::array::Span::<core::felt252>"
-          }
-        ]
-      },
-      {
-        "name": "generate_dungeon",
-        "type": "function",
-        "inputs": [
-          {
-            "name": "token_id",
-            "type": "core::integer::u128"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "cc_map::Dungeons::DungeonSerde"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "name": "constructor",
-        "type": "constructor",
-        "inputs": []
-      },
-      {
-        "kind": "struct",
-        "name": "cc_map::Dungeons::Minted",
-        "type": "event",
-        "members": [
-          {
-            "kind": "key",
-            "name": "account",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "kind": "data",
-            "name": "token_id",
-            "type": "core::integer::u128"
-          }
-        ]
-      },
-      {
-        "kind": "struct",
-        "name": "cc_map::Dungeons::Claimed",
-        "type": "event",
-        "members": [
-          {
-            "kind": "key",
-            "name": "account",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "kind": "data",
-            "name": "token_id",
-            "type": "core::integer::u128"
-          }
-        ]
-      },
-      {
-        "kind": "enum",
-        "name": "cc_map::Dungeons::Event",
-        "type": "event",
-        "variants": [
-          {
-            "kind": "nested",
-            "name": "Minted",
-            "type": "cc_map::Dungeons::Minted"
-          },
-          {
-            "kind": "nested",
-            "name": "Claimed",
-            "type": "cc_map::Dungeons::Claimed"
-          }
-        ]
-      }
-    ];
-    const address = "0x0019965eaf48c49d298a9a60423a6322c0b17443325a59832d65f0ac716364d2";
     this.contract = new Contract(abi, address, provider);
-
     this.init();
     this.load_image();
   },
   data() {
     return {
       contract: null,
-      name: "",
+      name: "loading...",
       dungeon_string: "",
       svg: null,
-      loading: true
+      loading: true,
+      wallet_address:"",
+      account:null,
+      provider:null
     }
   },
   methods: {
+
     async init() {
 
       const tokenId = 1;
@@ -333,7 +362,7 @@ export default {
       const svg = await this.contract.get_svg(1);
       // console.log("svg",svg);
       const svg_str = this.decode_string(svg);
-      // console.log("svg_str",svg_str)
+      console.log("svg_str", svg_str)
       this.svg = svg_str;
     },
     dungeon_toString(dungeon) {
@@ -358,17 +387,70 @@ export default {
       }
       return result;
     },
+    async mint() {
+      if(this.wallet_address==""){
+        return;
+      }
+
+      const contract = new Contract(abi,address,this.account);
+      const tx = await contract.mint();
+      console.log(tx);
+
+      ElMessage({
+        message: 'Congrats, this is a success message.',
+        type: 'success',
+      })
+    },
+    async connect() {
+      const a = await connect();
+      console.log(a.account);
+      this.wallet_address = a.account.address;
+      console.log(this.wallet_address)
+      this.provider = a.provider;
+      this.account = a.account;
+    }
   }
 }
 </script>
 
+
 <style>
+
+body {
+  background-color: black;
+  margin: 0;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: VT323, Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  color: black;
+  /*margin-top: 60px;*/
 }
+
+.container {
+  /*display: flex;*/
+  /*justify-content: center;*/
+  /*align-items: center;*/
+  width: 300px;
+  height: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@font-face {
+  font-family: 'VT323';
+  src: url('./VT323-Regular.ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 </style>
