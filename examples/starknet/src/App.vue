@@ -19,7 +19,9 @@
       <!--      <br/>-->
       <!--      <br/>-->
       <!--    <img alt="Vue logo" src="./assets/logo.png">-->
-      <div style="color: white;font-size: 24px;font-family: VT323">{{ name }}</div>
+      <el-input-number v-model="token_id" :min="1" :max="1000000" @change="handleChange"/>
+
+      <div style="color: white;font-size: 24px;font-family: VT323;margin-top: 10px"> {{ name }}</div>
       <div class="container" style="background-color: white" v-loading="loading">
         <pre style="color: black">{{ dungeon_string }}</pre>
       </div>
@@ -39,6 +41,7 @@
 import {ElMessage} from 'element-plus'
 import {Contract, constants, Provider, shortString} from "starknet";
 import {connect} from "@argent/get-starknet"
+import {useRoute} from 'vue-router';
 
 const abi = [
   {
@@ -292,6 +295,15 @@ export default {
     const provider = new Provider({sequencer: {network: constants.NetworkName.SN_GOERLI}});
     console.log("provider", provider);
     this.contract = new Contract(abi, address, provider);
+
+    const route = useRoute();
+    console.log("route", route);
+    const token_id = route.params.id;
+    console.log("token_id", token_id)
+    if (token_id) {
+      this.token_id = token_id;
+    }
+
     this.init();
     this.load_image();
   },
@@ -302,20 +314,23 @@ export default {
       dungeon_string: "",
       svg: null,
       loading: true,
-      loading_svg:true,
+      loading_svg: true,
       wallet_address: null,
       account: null,
-      provider: null
+      provider: null,
+      token_id: 1
     }
   },
   methods: {
-
+    handleChange() {
+      this.init();
+      this.load_image();
+    },
     async init() {
 
-      const tokenId = 1;
 
       this.loading = true;
-      const dungeon_data = await this.contract.generate_dungeon(tokenId);
+      const dungeon_data = await this.contract.generate_dungeon(this.token_id);
 
       console.log("dungeon_data", dungeon_data);
 
@@ -363,13 +378,13 @@ export default {
       this.loading = false;
     },
     async load_image() {
-      this.loading_svg=true;
-      const svg = await this.contract.get_svg(1);
+      this.loading_svg = true;
+      const svg = await this.contract.get_svg(this.token_id);
       // console.log("svg",svg);
       const svg_str = this.decode_string(svg);
       console.log("svg_str", svg_str)
       this.svg = svg_str;
-      this.loading_svg=false;
+      this.loading_svg = false;
     },
     dungeon_toString(dungeon) {
       // Returns a string representing the dungeon
