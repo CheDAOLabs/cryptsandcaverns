@@ -23,7 +23,7 @@
 
       <div style="color: white;font-size: 24px;font-family: VT323;margin-top: 10px"> {{ name }}</div>
       <div class="container"
-           style="margin-top: 10px;background-color: black;color:white;border: 1px;border-color:white;display: flex;align-items: center;    justify-content: center;"
+           style="  overflow: hidden;margin-top: 10px;background-color: black;color:white;border: 1px;border-color:white;display: flex;align-items: center;    justify-content: center;"
            v-loading="loading">
         <pre style="color: white">{{ dungeon_string }}</pre>
       </div>
