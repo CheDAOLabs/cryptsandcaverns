@@ -22,8 +22,10 @@
       <el-input-number v-model="token_id" :min="1" :max="1000000" @change="handleChange"/>
 
       <div style="color: white;font-size: 24px;font-family: VT323;margin-top: 10px"> {{ name }}</div>
-      <div class="container" style="background-color: white" v-loading="loading">
-        <pre style="color: black">{{ dungeon_string }}</pre>
+      <div class="container"
+           style="margin-top: 10px;background-color: black;color:white;border: 1px;border-color:white;display: flex;align-items: center;    justify-content: center;"
+           v-loading="loading">
+        <pre style="color: white">{{ dungeon_string }}</pre>
       </div>
       <div class="container" style="background-color: red;margin-top: 10px" v-loading="loading_svg">
         <div v-html="svg"></div>
@@ -292,9 +294,8 @@ export default {
     // HelloWorld
   },
   mounted() {
-    const provider = new Provider({sequencer: {network: constants.NetworkName.SN_GOERLI}});
-    console.log("provider", provider);
-    this.contract = new Contract(abi, address, provider);
+    this.provider = new Provider({sequencer: {network: constants.NetworkName.SN_GOERLI}});
+    console.log("provider", this.provider);
 
     const route = useRoute();
     console.log("route", route);
@@ -328,6 +329,7 @@ export default {
     },
     async init() {
 
+      this.contract = new Contract(abi, address, this.provider);
 
       this.loading = true;
       const dungeon_data = await this.contract.generate_dungeon(this.token_id);
@@ -378,6 +380,8 @@ export default {
       this.loading = false;
     },
     async load_image() {
+      this.contract = new Contract(abi, address, this.provider);
+
       this.loading_svg = true;
       const svg = await this.contract.get_svg(this.token_id);
       // console.log("svg",svg);
