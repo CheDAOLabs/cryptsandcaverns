@@ -1,10 +1,10 @@
 <template>
   <div id="app">
 
-    <el-card  class="box-card" style="width: 400px;margin-left: auto;margin-right: auto;margin-top: 50px">
+    <el-card class="box-card" style="width: 400px;margin-left: auto;margin-right: auto;margin-top: 50px">
       <template #header>
         <div class="card-header">
-          <span style="font-size: 30px">C&C Exsample</span>
+          <span style="font-size: 30px">C&C Example</span>
           <el-button class="button" plain type="primary" @click="connect">
             {{
               wallet_address == null ? "Connect Wallet" : wallet_address.toString().substr(0, 10) + "..." + wallet_address.toString().substr(wallet_address.length - 4, 4)
@@ -12,25 +12,24 @@
           </el-button>
         </div>
       </template>
-<!--      <div style="float: right;margin-top: 10px;margin-right: 10px">-->
-<!--        <el-button type="primary" plain @click="connect">Connect Wallet</el-button>-->
-<!--      </div>-->
-<!--      <div style="clear: both"></div>-->
-<!--      <br/>-->
-<!--      <br/>-->
+      <!--      <div style="float: right;margin-top: 10px;margin-right: 10px">-->
+      <!--        <el-button type="primary" plain @click="connect">Connect Wallet</el-button>-->
+      <!--      </div>-->
+      <!--      <div style="clear: both"></div>-->
+      <!--      <br/>-->
+      <!--      <br/>-->
       <!--    <img alt="Vue logo" src="./assets/logo.png">-->
       <div style="color: white;font-size: 24px;font-family: VT323">{{ name }}</div>
       <div class="container" style="background-color: white" v-loading="loading">
         <pre style="color: black">{{ dungeon_string }}</pre>
       </div>
-      <div class="container" style="background-color: red;margin-top: 10px" v-loading="loading">
+      <div class="container" style="background-color: red;margin-top: 10px" v-loading="loading_svg">
         <div v-html="svg"></div>
       </div>
       <div style="margin-top: 10px">
         <el-button type="danger" plain @click="mint">MINT</el-button>
       </div>
     </el-card>
-
 
 
   </div>
@@ -282,7 +281,7 @@ const abi = [
     ]
   }
 ];
-const address = "0x0019965eaf48c49d298a9a60423a6322c0b17443325a59832d65f0ac716364d2";
+const address = "0x0188ddc140efc0761c47e154b5bfd81ec36c0ed61a1dda92dadb826ae4c87d99";
 
 export default {
   name: 'App',
@@ -303,9 +302,10 @@ export default {
       dungeon_string: "",
       svg: null,
       loading: true,
-      wallet_address:null,
-      account:null,
-      provider:null
+      loading_svg:true,
+      wallet_address: null,
+      account: null,
+      provider: null
     }
   },
   methods: {
@@ -363,11 +363,13 @@ export default {
       this.loading = false;
     },
     async load_image() {
+      this.loading_svg=true;
       const svg = await this.contract.get_svg(1);
       // console.log("svg",svg);
       const svg_str = this.decode_string(svg);
       console.log("svg_str", svg_str)
       this.svg = svg_str;
+      this.loading_svg=false;
     },
     dungeon_toString(dungeon) {
       // Returns a string representing the dungeon
@@ -392,18 +394,23 @@ export default {
       return result;
     },
     async mint() {
-      if(this.wallet_address==""){
+      if (this.wallet_address == "") {
         return;
       }
 
-      const contract = new Contract(abi,address,this.account);
+      const contract = new Contract(abi, address, this.account);
       const tx = await contract.mint();
-      console.log(tx);
+      console.log("tx", tx);
+      const txid = tx.transaction_hash;
+
 
       ElMessage({
-        message: 'Congrats, mint is a success.',
+        message: 'Congrats, mint is a success.' + txid,
         type: 'success',
       })
+
+      const status = await this.provider.waitForTransaction(txid);
+      console.log("status", status);
     },
     async connect() {
       const a = await connect();
