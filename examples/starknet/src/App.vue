@@ -1,11 +1,15 @@
 <template>
   <div id="app">
 
-    <el-card v-loading="loading" class="box-card" style="width: 400px;margin-left: auto;margin-right: auto;margin-top: 50px">
+    <el-card  class="box-card" style="width: 400px;margin-left: auto;margin-right: auto;margin-top: 50px">
       <template #header>
         <div class="card-header">
           <span style="font-size: 30px">C&C Exsample</span>
-          <el-button class="button" plain type="primary" @click="connect">Connect Wallet</el-button>
+          <el-button class="button" plain type="primary" @click="connect">
+            {{
+              wallet_address == null ? "Connect Wallet" : wallet_address.toString().substr(0, 10) + "..." + wallet_address.toString().substr(wallet_address.length - 4, 4)
+            }}
+          </el-button>
         </div>
       </template>
 <!--      <div style="float: right;margin-top: 10px;margin-right: 10px">-->
@@ -16,10 +20,10 @@
 <!--      <br/>-->
       <!--    <img alt="Vue logo" src="./assets/logo.png">-->
       <div style="color: white;font-size: 24px;font-family: VT323">{{ name }}</div>
-      <div class="container" style="background-color: white">
+      <div class="container" style="background-color: white" v-loading="loading">
         <pre style="color: black">{{ dungeon_string }}</pre>
       </div>
-      <div class="container" style="background-color: red;margin-top: 10px">
+      <div class="container" style="background-color: red;margin-top: 10px" v-loading="loading">
         <div v-html="svg"></div>
       </div>
       <div style="margin-top: 10px">
@@ -299,7 +303,7 @@ export default {
       dungeon_string: "",
       svg: null,
       loading: true,
-      wallet_address:"",
+      wallet_address:null,
       account:null,
       provider:null
     }
@@ -397,7 +401,7 @@ export default {
       console.log(tx);
 
       ElMessage({
-        message: 'Congrats, this is a success message.',
+        message: 'Congrats, mint is a success.',
         type: 'success',
       })
     },
