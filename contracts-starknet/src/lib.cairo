@@ -126,6 +126,7 @@ mod Dungeons {
 
     // ------------------------------------------- Dungeon -------------------------------------------
 
+    // ------ Test -------
     #[external(v0)]
     fn test_get_svg(self: @ContractState, seed: u256) -> Array<felt252> {
         draw(self, test_generate_dungeon(self, seed))
@@ -239,6 +240,30 @@ mod Dungeons {
     ) -> bool {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ERC721Impl::is_approved_for_all(@state, owner, operator)
+    }
+
+    #[external(v0)]
+    fn name(self: @ContractState) -> felt252 {
+        let mut state = ERC721::unsafe_new_contract_state();
+        ERC721::ERC721MetadataImpl::name(@state)
+    }
+
+    #[external(v0)]
+    fn symbol(self: @ContractState) -> felt252 {
+        let mut state = ERC721::unsafe_new_contract_state();
+        ERC721::ERC721MetadataImpl::symbol(@state)
+    }
+
+    #[external(v0)]
+    fn token_uri(self: @ContractState, token_id: u128) -> felt252 {
+        let mut state = ERC721::unsafe_new_contract_state();
+        ERC721::ERC721MetadataImpl::token_uri(@state, token_id.into())
+    }
+
+    #[external(v0)]
+    fn support_interface(self: @ContractState, interface_id: felt252) -> bool {
+        let mut state = ERC721::unsafe_new_contract_state();
+        ERC721::ISRC5::supports_interface(@state, interface_id)
     }
 
     // ------ Dungeon -------
@@ -762,6 +787,9 @@ mod Dungeons {
 
     #[constructor]
     fn constructor(ref self: ContractState) {
+        let mut state = ERC721::unsafe_new_contract_state();
+        ERC721::InternalImpl::initializer(ref state, 'C&C', 'C&C');
+
         self.restricted.write(false);
         self.last_mint.write(0);
         self.claimed.write(0);
