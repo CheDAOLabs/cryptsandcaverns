@@ -286,7 +286,7 @@ const abi = [
     ]
   }
 ];
-const address = "0x02d440941ae01ae30b0a8e3985013945c3b626ca3f4742fced1496ad36494ee7";
+const address = "0x04f40722dc2ea00f32f44d73d4075be51c62ce9679db2ccf2bebbd3aba0c54c7";
 
 export default {
   name: 'App',
