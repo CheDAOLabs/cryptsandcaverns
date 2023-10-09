@@ -1,14 +1,16 @@
 mod dungeons_generator;
 mod utils;
 
+
 #[starknet::contract]
 mod Dungeons {
     // ------------------------------------------ Imports -------------------------------------------
-    use core::byte_array::ByteArrayTrait;
-    use core::traits::Into;
-    use core::array::ArrayTrait;
-    use core::clone::Clone;
-    use starknet::{ContractAddress, info::get_caller_address};
+
+    use starknet::{
+        ContractAddress, SyscallResult, info::get_caller_address,
+        storage_access::{Store, StorageAddress, StorageBaseAddress}
+    };
+
     use super::{
         utils::{random::{random}, bit_operation::BitOperationTrait, pack::{PackTrait, Pack}},
         dungeons_generator as generator
@@ -25,12 +27,12 @@ mod Dungeons {
         structure: u8,
         legendary: u8,
         layout: Pack,
-        entities: EntityData,
+        entities: EntityDataSerde,
         affinity: felt252,
         dungeon_name: Span<felt252>
     }
 
-    #[derive(Clone, Drop)]
+    #[derive(Drop)]
     struct Dungeon {
         size: u8,
         environment: u8,
@@ -42,8 +44,15 @@ mod Dungeons {
         dungeon_name: Array<felt252>
     }
 
-    #[derive(Copy, Drop, Serde)]
+    #[derive(Drop)]
     struct EntityData {
+        x: Array<u8>,
+        y: Array<u8>,
+        entity_data: Array<u8>
+    }
+
+    #[derive(Copy, Drop, Serde)]
+    struct EntityDataSerde {
         x: Span<u8>,
         y: Span<u8>,
         entity_data: Span<u8>
@@ -102,6 +111,7 @@ mod Dungeons {
 
     #[storage]
     struct Storage {
+        dungeons: LegacyMap::<u128, Dungeon>,
         // -------------- dungeons ----------------
         // price: u256,
         // loot:ContractAddress,
@@ -124,6 +134,171 @@ mod Dungeons {
         environmentName: LegacyMap::<u8, felt252>
     }
 
+    impl StoreDungeon of Store<Dungeon> {
+        fn read(address_domain: u32, base: StorageBaseAddress) -> SyscallResult<Dungeon> {
+            StoreDungeon::read_at_offset(address_domain, base, 0)
+        }
+
+        fn write(
+            address_domain: u32, base: StorageBaseAddress, value: Dungeon
+        ) -> SyscallResult<()> {
+            StoreDungeon::write_at_offset(address_domain, base, 0, value)
+        }
+
+        fn read_at_offset(
+            address_domain: u32, base: StorageBaseAddress, mut offset: u8
+        ) -> SyscallResult<Dungeon> {
+            let size = Store::<u8>::read_at_offset(address_domain, base, offset).unwrap();
+            offset += 1;
+
+            let environment = Store::<u8>::read_at_offset(address_domain, base, offset).unwrap();
+            offset += 1;
+
+            let structure = Store::<u8>::read_at_offset(address_domain, base, offset).unwrap();
+            offset += 1;
+
+            let legendary = Store::<u8>::read_at_offset(address_domain, base, offset).unwrap();
+            offset += 1;
+
+            let first = Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap();
+            offset += 1;
+            let second = Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap();
+            offset += 1;
+            let third = Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap();
+            offset += 1;
+
+            let (x, mut offset) = read_array(address_domain, base, offset);
+            let (y, mut offset) = read_array(address_domain, base, offset);
+            let (entity_data, mut offset) = read_array(address_domain, base, offset);
+
+            let affinity = Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap();
+            offset += 1;
+
+            let mut len: u8 = Store::<u8>::read_at_offset(address_domain, base, offset)
+                .expect('span too long');
+            offset += 1;
+            let mut dungeon_name: Array<felt252> = ArrayTrait::new();
+            loop {
+                if len == 0 {
+                    break;
+                }
+                dungeon_name
+                    .append(
+                        Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap()
+                    );
+                offset += 1;
+                len -= 1;
+            };
+
+            return Result::Ok(
+                Dungeon {
+                    size: size,
+                    environment: environment,
+                    structure: structure,
+                    legendary: legendary,
+                    layout: Pack { first: first, second: second, third: third },
+                    entities: EntityData { x: x, y: y, entity_data: entity_data },
+                    affinity: affinity,
+                    dungeon_name: dungeon_name
+                }
+            );
+        }
+
+        fn write_at_offset(
+            address_domain: u32, base: StorageBaseAddress, mut offset: u8, value: Dungeon
+        ) -> SyscallResult<()> {
+            Store::<u8>::write_at_offset(address_domain, base, offset, value.size);
+            offset += 1;
+
+            Store::<u8>::write_at_offset(address_domain, base, offset, value.environment);
+            offset += 1;
+
+            Store::<u8>::write_at_offset(address_domain, base, offset, value.structure);
+            offset += 1;
+
+            Store::<u8>::write_at_offset(address_domain, base, offset, value.legendary);
+            offset += 1;
+
+            Store::<felt252>::write_at_offset(address_domain, base, offset, value.layout.first);
+            offset += 1;
+            Store::<felt252>::write_at_offset(address_domain, base, offset, value.layout.second);
+            offset += 1;
+            Store::<felt252>::write_at_offset(address_domain, base, offset, value.layout.third);
+            offset += 1;
+
+            offset = write_array(address_domain, base, value.entities.x.span(), offset);
+            offset = write_array(address_domain, base, value.entities.y.span(), offset);
+            offset = write_array(address_domain, base, value.entities.entity_data.span(), offset);
+
+            Store::<felt252>::write_at_offset(address_domain, base, offset, value.affinity);
+            offset += 1;
+
+            let mut span = value.dungeon_name.span();
+            Store::<u8>::write_at_offset(
+                address_domain, base, offset, span.len().try_into().expect('span too long')
+            );
+            offset += 1;
+            loop {
+                match span.pop_front() {
+                    Option::Some(element) => {
+                        Store::<felt252>::write_at_offset(address_domain, base, offset, *element);
+                        offset += 1;
+                    },
+                    Option::None(_) => {
+                        break Result::Ok(());
+                    }
+                };
+            }
+        }
+
+        fn size() -> u8 {
+            252
+        }
+    }
+
+    fn read_array(
+        address_domain: u32, base: StorageBaseAddress, mut offset: u8
+    ) -> (Array<u8>, u8) {
+        let mut len: u8 = Store::<u8>::read_at_offset(address_domain, base, offset)
+            .expect('span too long');
+        offset += 1;
+
+        let mut result: Array<u8> = ArrayTrait::new();
+        loop {
+            if len == 0 {
+                break;
+            }
+
+            result.append(Store::<u8>::read_at_offset(address_domain, base, offset).unwrap());
+            offset += 1;
+            len -= 1;
+        };
+
+        (result, offset)
+    }
+
+    fn write_array(
+        address_domain: u32, base: StorageBaseAddress, mut span: Span<u8>, mut offset: u8
+    ) -> u8 {
+        Store::<u8>::write_at_offset(
+            address_domain, base, offset, span.len().try_into().expect('span too long')
+        );
+        offset += 1;
+
+        loop {
+            match span.pop_front() {
+                Option::Some(element) => {
+                    Store::<u8>::write_at_offset(address_domain, base, offset, *element);
+                    offset += 1;
+                },
+                Option::None(_) => {
+                    break offset;
+                }
+            };
+        }
+    }
+
+
     // ------------------------------------------- Dungeon -------------------------------------------
 
     // ------ Test -------
@@ -134,7 +309,7 @@ mod Dungeons {
 
     #[external(v0)]
     fn test_get_layout(self: @ContractState, seed: u256) -> (Pack, u8) {
-        get_layout(self, seed, get_size_in(self, seed))
+        get_layout(self, seed, get_size_in(seed))
     }
 
     #[external(v0)]
@@ -144,12 +319,12 @@ mod Dungeons {
 
     #[external(v0)]
     fn test_get_entities(self: @ContractState, seed: u256) -> (Array<u8>, Array<u8>, Array<u8>) {
-        generator::get_entities(seed, get_size_in(self, seed))
+        generator::get_entities(seed, get_size_in(seed))
     }
 
     #[external(v0)]
     fn test_generate_dungeon(self: @ContractState, seed: u256) -> DungeonSerde {
-        let size = get_size_in(self, seed);
+        let size = get_size_in(seed);
 
         let (x_array, y_array, t_array) = generator::get_entities(seed, size);
         let (mut layout, structure) = get_layout(self, seed, size);
@@ -161,7 +336,7 @@ mod Dungeons {
             structure: structure,
             legendary: legendary,
             layout: layout,
-            entities: EntityData {
+            entities: EntityDataSerde {
                 x: x_array.span(), y: y_array.span(), entity_data: t_array.span()
             },
             affinity: affinity,
@@ -169,20 +344,44 @@ mod Dungeons {
         }
     }
 
+    #[external(v0)]
+    fn test_get_dungeon_storage(self: @ContractState, token_id: u128) -> DungeonSerde {
+        let dungeon = self.dungeons.read(token_id);
+        DungeonSerde {
+            size: dungeon.size,
+            environment: dungeon.environment,
+            structure: dungeon.structure,
+            legendary: dungeon.legendary,
+            layout: dungeon.layout,
+            entities: EntityDataSerde {
+                x: dungeon.entities.x.span(),
+                y: dungeon.entities.y.span(),
+                entity_data: dungeon.entities.entity_data.span()
+            },
+            affinity: dungeon.affinity,
+            dungeon_name: dungeon.dungeon_name.span()
+        }
+    }
+
     // ------ ERC721 -------
     #[external(v0)]
     fn mint(ref self: ContractState) -> u128 {
-        assert(self.last_mint.read() < 9000, 'Token sold out');
+        // assert(self.last_mint.read() < 9000, 'Token sold out');
         // assert(!self.restricted.read(), 'Dungeon is restricted');
 
         let user = get_caller_address();
         let token_id = self.last_mint.read() + 1;
+        let seed = get_seed(token_id);
         self.last_mint.write(token_id);
-        self.seeds.write(token_id, get_seed(token_id));
+        self.seeds.write(token_id, seed);
 
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::InternalImpl::_mint(ref state, user, token_id.into());
         self.emit(Minted { account: user, token_id });
+
+        // store generate result into storage
+        self.dungeons.write(token_id, generate_dungeon_in(@self, seed, get_size_in(seed)));
+
         token_id
     }
 
@@ -290,35 +489,55 @@ mod Dungeons {
     fn generate_dungeon(self: @ContractState, token_id: u128) -> DungeonSerde {
         is_valid(self, token_id.into());
         let seed: u256 = self.seeds.read(token_id);
-        let size = get_size_in(self, seed);
+        let size = get_size_in(seed);
 
+        let dungeon = self.dungeons.read(token_id);
+        if dungeon.layout.first == 0 && dungeon.layout.second == 0 && dungeon.layout.third == 0 {
+            let dungeon = generate_dungeon_in(self, seed, size);
+        }
+
+        DungeonSerde {
+            size: dungeon.size,
+            environment: dungeon.environment,
+            structure: dungeon.structure,
+            legendary: dungeon.legendary,
+            layout: dungeon.layout,
+            entities: EntityDataSerde {
+                x: dungeon.entities.x.span(),
+                y: dungeon.entities.y.span(),
+                entity_data: dungeon.entities.entity_data.span()
+            },
+            affinity: dungeon.affinity,
+            dungeon_name: dungeon.dungeon_name.span()
+        }
+    }
+
+    fn generate_dungeon_in(self: @ContractState, seed: u256, size: u128) -> Dungeon {
         let (x_array, y_array, t_array) = generator::get_entities(seed, size);
         let (mut layout, structure) = get_layout(self, seed, size);
         let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
 
-        DungeonSerde {
+        Dungeon {
             size: size.try_into().unwrap(),
             environment: get_environment_in(self, seed),
             structure: structure,
             legendary: legendary,
             layout: layout,
-            entities: EntityData {
-                x: x_array.span(), y: y_array.span(), entity_data: t_array.span()
-            },
+            entities: EntityData { x: x_array, y: y_array, entity_data: t_array },
             affinity: affinity,
-            dungeon_name: dungeon_name.span()
+            dungeon_name: dungeon_name
         }
     }
 
     #[external(v0)]
-    fn get_entities(self: @ContractState, token_id: u128) -> EntityData {
+    fn get_entities(self: @ContractState, token_id: u128) -> EntityDataSerde {
         // 'get_entities'.print();
         // is_valid(self, token_id);
 
         let seed = self.seeds.read(token_id);
-        let (x_array, y_array, t_array) = generator::get_entities(seed, get_size_in(self, seed));
+        let (x_array, y_array, t_array) = generator::get_entities(seed, get_size_in(seed));
 
-        EntityData { x: x_array.span(), y: y_array.span(), entity_data: t_array.span() }
+        EntityDataSerde { x: x_array.span(), y: y_array.span(), entity_data: t_array.span() }
     }
 
     #[external(v0)]
@@ -349,10 +568,10 @@ mod Dungeons {
 
     #[external(v0)]
     fn get_size(self: @ContractState, token_id: u128) -> u128 {
-        get_size_in(self, get_seed(token_id))
+        get_size_in(get_seed(token_id))
     }
 
-    fn get_size_in(self: @ContractState, seed: u256) -> u128 {
+    fn get_size_in(seed: u256) -> u128 {
         random(seed.left_shift(4), 8, 25)
     }
 
@@ -509,23 +728,7 @@ mod Dungeons {
         parts
     }
 
-    // fn arr_to_dict(origin: Span<u256>) -> Felt252Dict<Nullable<u256>> {
-    //     let mut result: Felt252Dict<Nullable<u256>> = Default::default();
-
-    //     let limit = origin.len();
-    //     let mut count = 0;
-    //     loop {
-    //         if count == limit {
-    //             break;
-    //         }
-
-    //         result.update(count.into(), *origin[count]);
-    //         count += 1;
-    //     };
-
-    //     result
-    // }
-    use generator::p;
+    // use generator::p;
     fn chunk_dungeon(
         self: @ContractState, dungeon: DungeonSerde, ref helper: RenderHelper
     ) -> Array<felt252> {
