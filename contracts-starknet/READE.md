@@ -1,13 +1,17 @@
 # Crypts And Caverns
+
+## Description
+The rewritten version in the Cairo language has achieved the same effects and features as the solidity version.<br>
 For more infomation, you can check [README](https://github.com/CheDAOLabs/cryptsandcaverns/blob/main/contract/README.md).
 
-## Starknet Address
+## Goerli Address
 ```
 0x0148079ed14213e39516a4d366395b0feef93f6f31af364a1022bb2da454d7fa
 ```
 
 # Starknet / Cairo
 
+## Introduction
 `Starknet` is a Layer-2 network that makes Ethereum transactions faster, cheaper, and more secure using zk-STARKs technology. Think of it as a boosted layer on top of Ethereum, optimized for speed and cost.
 
 `Cairo` is tailor-made for creating STARK-based smart contracts. As Starknet’s native language, it’s central to building scalable and secure decentralized apps. `Cairo` is a programming language designed for a virtual CPU of the same name.
