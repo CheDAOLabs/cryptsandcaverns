@@ -48,3 +48,7 @@ you can check out the [`Starkli Book`]([`starli`](https://book.starkli.rs/introd
 
 _`Remix with Starknet plugin ` is another option._
 
+## Address
+```
+0x0148079ed14213e39516a4d366395b0feef93f6f31af364a1022bb2da454d7fa
+```
