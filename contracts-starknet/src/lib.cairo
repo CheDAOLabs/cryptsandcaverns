@@ -386,19 +386,19 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn owner_of(self: @ContractState, token_id: u128) -> ContractAddress {
+    fn ownerOf(self: @ContractState, token_id: u128) -> ContractAddress {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::InternalImpl::_owner_of(@state, token_id.into())
     }
 
     #[external(v0)]
-    fn balance_of(self: @ContractState, account: ContractAddress) -> u256 {
+    fn balanceOf(self: @ContractState, account: ContractAddress) -> u256 {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ERC721Impl::balance_of(@state, account)
     }
 
     #[external(v0)]
-    fn safe_transfer_from(
+    fn safeTransferFrom(
         self: @ContractState, from: ContractAddress, to: ContractAddress, token_id: u128
     ) {
         let mut state = ERC721::unsafe_new_contract_state();
@@ -408,7 +408,7 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn transfer_from(
+    fn transferFrom(
         self: @ContractState, from: ContractAddress, to: ContractAddress, token_id: u128
     ) {
         let mut state = ERC721::unsafe_new_contract_state();
@@ -422,19 +422,19 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn set_approval_for_all(ref self: ContractState, operator: ContractAddress, approved: bool) {
+    fn setApprovalForAll(ref self: ContractState, operator: ContractAddress, approved: bool) {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ERC721Impl::set_approval_for_all(ref state, operator, approved);
     }
 
     #[external(v0)]
-    fn get_approved(self: @ContractState, token_id: u128) -> ContractAddress {
+    fn getApproved(self: @ContractState, token_id: u128) -> ContractAddress {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ERC721Impl::get_approved(@state, token_id.into())
     }
 
     #[external(v0)]
-    fn is_approved_for_all(
+    fn isApprovedForAll(
         self: @ContractState, owner: ContractAddress, operator: ContractAddress
     ) -> bool {
         let mut state = ERC721::unsafe_new_contract_state();
@@ -454,13 +454,13 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn token_uri(self: @ContractState, token_id: u128) -> felt252 {
+    fn tokenURI(self: @ContractState, token_id: u128) -> felt252 {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ERC721MetadataImpl::token_uri(@state, token_id.into())
     }
 
     #[external(v0)]
-    fn support_interface(self: @ContractState, interface_id: felt252) -> bool {
+    fn supportInterface(self: @ContractState, interface_id: felt252) -> bool {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ISRC5::supports_interface(@state, interface_id)
     }

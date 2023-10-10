@@ -158,6 +158,8 @@ Seeder Address: 0xcE318E819Fdf84d07e2F467dA98E2cC17a06b344
 Dungeons Address: 0x55819665a67D84D5A9476B7Ee0310c205a70fE75
 
 
+<!--
+
 # Starknet / Cairo
 
 Starknet is a Layer 2 that uses zkRollup technology to offer a low-gas, fast-transaction rollup built on top of ethereum. Transactions are batched and submitted to L1 over time.
@@ -182,3 +184,4 @@ We use [`hardhat-starknet`](https://github.com/Shard-Labs/starknet-hardhat-plugi
 1. Run `npm run nodestarknet` in a terminal to start a local node. This will listen for queries.
 2. Run `npm run teststarknet` in another terminal to compile and run tests.
 
+-->
