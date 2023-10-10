@@ -1,3 +1,11 @@
+# Crypts And Caverns
+For more infomation, you can check [README](https://github.com/CheDAOLabs/cryptsandcaverns/blob/main/contract/README.md).
+
+## Starknet Address
+```
+0x0148079ed14213e39516a4d366395b0feef93f6f31af364a1022bb2da454d7fa
+```
+
 # Starknet / Cairo
 
 `Starknet` is a Layer-2 network that makes Ethereum transactions faster, cheaper, and more secure using zk-STARKs technology. Think of it as a boosted layer on top of Ethereum, optimized for speed and cost.
@@ -48,7 +56,3 @@ you can check out the [`Starkli Book`]([`starli`](https://book.starkli.rs/introd
 
 _`Remix with Starknet plugin ` is another option._
 
-## Address
-```
-0x0148079ed14213e39516a4d366395b0feef93f6f31af364a1022bb2da454d7fa
-```
