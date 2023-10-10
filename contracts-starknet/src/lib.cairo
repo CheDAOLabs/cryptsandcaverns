@@ -302,66 +302,66 @@ mod Dungeons {
     // ------------------------------------------- Dungeon -------------------------------------------
 
     // ------ Test -------
-    #[external(v0)]
-    fn test_get_svg(self: @ContractState, seed: u256) -> Array<felt252> {
-        draw(self, test_generate_dungeon(self, seed))
-    }
+    // #[external(v0)]
+    // fn test_get_svg(self: @ContractState, seed: u256) -> Array<felt252> {
+    //     draw(self, test_generate_dungeon(self, seed))
+    // }
 
-    #[external(v0)]
-    fn test_get_layout(self: @ContractState, seed: u256) -> (Pack, u8) {
-        get_layout(self, seed, get_size_in(seed))
-    }
+    // #[external(v0)]
+    // fn test_get_layout(self: @ContractState, seed: u256) -> (Pack, u8) {
+    //     get_layout(self, seed, get_size_in(seed))
+    // }
 
-    #[external(v0)]
-    fn test_get_name(self: @ContractState, seed: u256) -> (Array<felt252>, felt252, u8) {
-        get_name_in(self, seed)
-    }
+    // #[external(v0)]
+    // fn test_get_name(self: @ContractState, seed: u256) -> (Array<felt252>, felt252, u8) {
+    //     get_name_in(self, seed)
+    // }
 
-    #[external(v0)]
-    fn test_get_entities(self: @ContractState, seed: u256) -> (Array<u8>, Array<u8>, Array<u8>) {
-        generator::get_entities(seed, get_size_in(seed))
-    }
+    // #[external(v0)]
+    // fn test_get_entities(self: @ContractState, seed: u256) -> (Array<u8>, Array<u8>, Array<u8>) {
+    //     generator::get_entities(seed, get_size_in(seed))
+    // }
 
-    #[external(v0)]
-    fn test_generate_dungeon(self: @ContractState, seed: u256) -> DungeonSerde {
-        let size = get_size_in(seed);
+    // #[external(v0)]
+    // fn test_generate_dungeon(self: @ContractState, seed: u256) -> DungeonSerde {
+    //     let size = get_size_in(seed);
 
-        let (x_array, y_array, t_array) = generator::get_entities(seed, size);
-        let (mut layout, structure) = get_layout(self, seed, size);
-        let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
+    //     let (x_array, y_array, t_array) = generator::get_entities(seed, size);
+    //     let (mut layout, structure) = get_layout(self, seed, size);
+    //     let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
 
-        DungeonSerde {
-            size: size.try_into().unwrap(),
-            environment: get_environment_in(self, seed),
-            structure: structure,
-            legendary: legendary,
-            layout: layout,
-            entities: EntityDataSerde {
-                x: x_array.span(), y: y_array.span(), entity_data: t_array.span()
-            },
-            affinity: affinity,
-            dungeon_name: dungeon_name.span()
-        }
-    }
+    //     DungeonSerde {
+    //         size: size.try_into().unwrap(),
+    //         environment: get_environment_in(self, seed),
+    //         structure: structure,
+    //         legendary: legendary,
+    //         layout: layout,
+    //         entities: EntityDataSerde {
+    //             x: x_array.span(), y: y_array.span(), entity_data: t_array.span()
+    //         },
+    //         affinity: affinity,
+    //         dungeon_name: dungeon_name.span()
+    //     }
+    // }
 
-    #[external(v0)]
-    fn test_get_dungeon_storage(self: @ContractState, token_id: u128) -> DungeonSerde {
-        let dungeon = self.dungeons.read(token_id);
-        DungeonSerde {
-            size: dungeon.size,
-            environment: dungeon.environment,
-            structure: dungeon.structure,
-            legendary: dungeon.legendary,
-            layout: dungeon.layout,
-            entities: EntityDataSerde {
-                x: dungeon.entities.x.span(),
-                y: dungeon.entities.y.span(),
-                entity_data: dungeon.entities.entity_data.span()
-            },
-            affinity: dungeon.affinity,
-            dungeon_name: dungeon.dungeon_name.span()
-        }
-    }
+    // #[external(v0)]
+    // fn test_get_dungeon_storage(self: @ContractState, token_id: u128) -> DungeonSerde {
+    //     let dungeon = self.dungeons.read(token_id);
+    //     DungeonSerde {
+    //         size: dungeon.size,
+    //         environment: dungeon.environment,
+    //         structure: dungeon.structure,
+    //         legendary: dungeon.legendary,
+    //         layout: dungeon.layout,
+    //         entities: EntityDataSerde {
+    //             x: dungeon.entities.x.span(),
+    //             y: dungeon.entities.y.span(),
+    //             entity_data: dungeon.entities.entity_data.span()
+    //         },
+    //         affinity: dungeon.affinity,
+    //         dungeon_name: dungeon.dungeon_name.span()
+    //     }
+    // }
 
     // ------ ERC721 -------
     #[external(v0)]
