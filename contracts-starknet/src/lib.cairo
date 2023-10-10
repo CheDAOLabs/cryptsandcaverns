@@ -399,7 +399,7 @@ mod Dungeons {
 
     #[external(v0)]
     fn safeTransferFrom(
-        self: @ContractState, from: ContractAddress, to: ContractAddress, token_id: u128
+        ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u128
     ) {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ERC721Impl::safe_transfer_from(
@@ -409,7 +409,7 @@ mod Dungeons {
 
     #[external(v0)]
     fn transferFrom(
-        self: @ContractState, from: ContractAddress, to: ContractAddress, token_id: u128
+        ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u128
     ) {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ERC721Impl::transfer_from(ref state, from, to, token_id.into());
