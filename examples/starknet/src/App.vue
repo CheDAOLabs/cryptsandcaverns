@@ -77,7 +77,7 @@ const abi = [
     "inputs": [
       {
         "name": "token_id",
-        "type": "core::integer::u128"
+        "type": "core::integer::u256"
       }
     ],
     "outputs": [
@@ -103,7 +103,7 @@ const abi = [
     "inputs": [
       {
         "name": "token_id",
-        "type": "core::integer::u128"
+        "type": "core::integer::u256"
       }
     ],
     "outputs": [
@@ -119,7 +119,7 @@ const abi = [
     "inputs": [
       {
         "name": "token_id",
-        "type": "core::integer::u128"
+        "type": "core::integer::u256"
       }
     ],
     "outputs": [
@@ -219,7 +219,7 @@ const abi = [
     "inputs": [
       {
         "name": "token_id",
-        "type": "core::integer::u128"
+        "type": "core::integer::u256"
       }
     ],
     "outputs": [
@@ -247,7 +247,7 @@ const abi = [
       {
         "kind": "data",
         "name": "token_id",
-        "type": "core::integer::u128"
+        "type": "core::integer::u256"
       }
     ]
   },
@@ -264,7 +264,7 @@ const abi = [
       {
         "kind": "data",
         "name": "token_id",
-        "type": "core::integer::u128"
+        "type": "core::integer::u256"
       }
     ]
   },
@@ -286,7 +286,7 @@ const abi = [
     ]
   }
 ];
-const address = "0x04f40722dc2ea00f32f44d73d4075be51c62ce9679db2ccf2bebbd3aba0c54c7";
+const address = "0x0148079ed14213e39516a4d366395b0feef93f6f31af364a1022bb2da454d7fa";
 
 export default {
   name: 'App',
