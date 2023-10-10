@@ -1567,3 +1567,71 @@ fn test_pow() {
     );
 }
 
+
+// ------------------------------ generate script in Java ------------------------------
+
+// public class Main {
+
+//     static String ifString = "if ";
+//     static String elseString = "else ";
+//     static String left = "{ ";
+//     static String right = "} ";
+//     static String smallerThan = "<= ";
+//     static String equals = "== ";
+//     static String pow = "POW_";
+//     static String position = "position";
+
+//     static String assertString = "assert(get_pow( ";
+//     static String ll = " ) ";
+//     static String pre = "0x";
+//     static String mid = ", 'pow ";
+//     static String end = "'); ";
+
+//     public static void main(String[] args) {
+
+//         // String result = circle("", 0, 252);
+
+//         String result = testCircle("", 0, "1", 252);
+
+//         System.out.println(result);
+
+//     }
+
+//     public static String testCircle(String result, int count, String pow, int limit) {
+
+//         result += assertString + count + ll + equals + pre + pow + mid + count + end;
+
+//         if (pow.startsWith("1")) {
+//             pow = "2" + pow.substring(1);
+//         } else if (pow.startsWith("2")) {
+//             pow = "4" + pow.substring(1);
+//         } else if (pow.startsWith("4")) {
+//             pow = "8" + pow.substring(1);
+//         } else {
+//             pow = "1" + pow.substring(1) + "0";
+//         }
+
+//         if (count < limit) {
+//             return testCircle(result, count + 1, pow, limit);
+//         } else {
+//             return result;
+//         }
+//     }
+
+//     public static String circle(String result, int low, int high) {
+
+//         int dis = high - low;
+//         if (dis > 1) {
+//             result += circle(ifString + position + smallerThan + (dis / 2 + low) + left, low, (dis / 2 + low)) + right +
+//                     circle(elseString + left, (dis / 2 + low + 1), high) + right;
+//         } else if (dis == 1) {
+//             result += ifString + position + equals + low + left + pow + low + right + elseString + left + pow + high + right;
+//         } else {
+//             result += pow + low;
+//         }
+
+//         return result;
+
+//     }
+
+// }
