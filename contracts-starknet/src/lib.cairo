@@ -1,6 +1,45 @@
 mod dungeons_generator;
 mod utils;
 
+// --------------------------------------------- interface -------------------------------------------
+
+// use starknet::ContractAddress;
+// #[starknet::interface]
+// trait IERC721<TState> {
+//     fn balance_of(self: @TState, account: ContractAddress) -> u256;
+//     fn owner_of(self: @TState, token_id: u256) -> ContractAddress;
+//     fn transfer_from(ref self: TState, from: ContractAddress, to: ContractAddress, token_id: u256);
+//     fn safe_transfer_from(
+//         ref self: TState,
+//         from: ContractAddress,
+//         to: ContractAddress,
+//         token_id: u256,
+//         data: Span<felt252>
+//     );
+//     fn approve(ref self: TState, to: ContractAddress, token_id: u256);
+//     fn set_approval_for_all(ref self: TState, operator: ContractAddress, approved: bool);
+//     fn get_approved(self: @TState, token_id: u256) -> ContractAddress;
+//     fn is_approved_for_all(
+//         self: @TState, owner: ContractAddress, operator: ContractAddress
+//     ) -> bool;
+// }
+
+// #[starknet::interface]
+// trait IERC721CamelOnly<TState> {
+//     fn balanceOf(self: @TState, account: ContractAddress) -> u256;
+//     fn ownerOf(self: @TState, tokenId: u256) -> ContractAddress;
+//     fn transferFrom(ref self: TState, from: ContractAddress, to: ContractAddress, tokenId: u256);
+//     fn safeTransferFrom(
+//         ref self: TState,
+//         from: ContractAddress,
+//         to: ContractAddress,
+//         tokenId: u256,
+//         data: Span<felt252>
+//     );
+//     fn setApprovalForAll(ref self: TState, operator: ContractAddress, approved: bool);
+//     fn getApproved(self: @TState, tokenId: u256) -> ContractAddress;
+//     fn isApprovedForAll(self: @TState, owner: ContractAddress, operator: ContractAddress) -> bool;
+// }
 
 #[starknet::contract]
 mod Dungeons {
@@ -16,7 +55,7 @@ mod Dungeons {
         dungeons_generator as generator
     };
 
-    use openzeppelin::token::erc721::ERC721;
+    use openzeppelin::token::erc721::{ERC721, interface};
 
     // ------------------------------------------- Structs -------------------------------------------
 
@@ -56,14 +95,6 @@ mod Dungeons {
         x: Span<u8>,
         y: Span<u8>,
         entity_data: Span<u8>
-    }
-
-    /// Data structure that stores our different maps (layout, doors, points)
-    #[derive(Drop)]
-    struct Maps {
-        layout: Span<(u8, u8)>,
-        doors: Span<(u8, u8)>,
-        points: Span<(u8, u8)>,
     }
 
     /// Helper variables when iterating through and drawing dungeon tiles
@@ -364,6 +395,7 @@ mod Dungeons {
     // }
 
     // ------ ERC721 -------
+
     #[external(v0)]
     fn mint(ref self: ContractState) -> u128 {
         // assert(self.last_mint.read() < 9000, 'Token sold out');
@@ -371,7 +403,7 @@ mod Dungeons {
 
         let user = get_caller_address();
         let token_id = self.last_mint.read() + 1;
-        let seed = get_seed(token_id);
+        let seed = get_seed(token_id.into());
         self.last_mint.write(token_id);
         self.seeds.write(token_id, seed);
 
@@ -386,112 +418,164 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn ownerOf(self: @ContractState, token_id: u128) -> ContractAddress {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::InternalImpl::_owner_of(@state, token_id.into())
+    impl ERC721Impl of interface::IERC721<ContractState> {
+        fn owner_of(self: @ContractState, token_id: u256) -> ContractAddress {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::InternalImpl::_owner_of(@state, token_id)
+        }
+
+        fn balance_of(self: @ContractState, account: ContractAddress) -> u256 {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721Impl::balance_of(@state, account)
+        }
+
+        fn safe_transfer_from(
+            ref self: ContractState,
+            from: ContractAddress,
+            to: ContractAddress,
+            token_id: u256,
+            data: Span<felt252>
+        ) {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721Impl::safe_transfer_from(ref state, from, to, token_id, data);
+        }
+
+        fn transfer_from(
+            ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u256
+        ) {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721Impl::transfer_from(ref state, from, to, token_id);
+        }
+
+        fn approve(ref self: ContractState, to: ContractAddress, token_id: u256) {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721Impl::approve(ref state, to, token_id);
+        }
+
+        fn set_approval_for_all(
+            ref self: ContractState, operator: ContractAddress, approved: bool
+        ) {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721Impl::set_approval_for_all(ref state, operator, approved);
+        }
+
+        fn get_approved(self: @ContractState, token_id: u256) -> ContractAddress {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721Impl::get_approved(@state, token_id)
+        }
+
+        fn is_approved_for_all(
+            self: @ContractState, owner: ContractAddress, operator: ContractAddress
+        ) -> bool {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721Impl::is_approved_for_all(@state, owner, operator)
+        }
     }
 
     #[external(v0)]
-    fn balanceOf(self: @ContractState, account: ContractAddress) -> u256 {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721Impl::balance_of(@state, account)
+    impl ERC721MetadataImpl of interface::IERC721Metadata<ContractState> {
+        fn name(self: @ContractState) -> felt252 {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721MetadataImpl::name(@state)
+        }
+
+        fn symbol(self: @ContractState) -> felt252 {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721MetadataImpl::symbol(@state)
+        }
+
+        fn token_uri(self: @ContractState, token_id: u256) -> felt252 {
+            let mut state = ERC721::unsafe_new_contract_state();
+            ERC721::ERC721MetadataImpl::token_uri(@state, token_id)
+        }
     }
 
     #[external(v0)]
-    fn safeTransferFrom(
-        ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u128
-    ) {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721Impl::safe_transfer_from(
-            ref state, from, to, token_id.into(), ArrayTrait::<felt252>::new().span()
-        );
+    impl ERC721CamelOnlyImpl of interface::IERC721CamelOnly<ContractState> {
+        fn ownerOf(self: @ContractState, tokenId: u256) -> ContractAddress {
+            ERC721Impl::owner_of(self, tokenId)
+        }
+
+        fn balanceOf(self: @ContractState, account: ContractAddress) -> u256 {
+            ERC721Impl::balance_of(self, account)
+        }
+
+        fn getApproved(self: @ContractState, tokenId: u256) -> ContractAddress {
+            ERC721Impl::get_approved(self, tokenId)
+        }
+
+        fn isApprovedForAll(
+            self: @ContractState, owner: ContractAddress, operator: ContractAddress
+        ) -> bool {
+            ERC721Impl::is_approved_for_all(self, owner, operator)
+        }
+
+        fn setApprovalForAll(ref self: ContractState, operator: ContractAddress, approved: bool) {
+            ERC721Impl::set_approval_for_all(ref self, operator, approved)
+        }
+
+        fn transferFrom(
+            ref self: ContractState, from: ContractAddress, to: ContractAddress, tokenId: u256
+        ) {
+            ERC721Impl::transfer_from(ref self, from, to, tokenId)
+        }
+
+        fn safeTransferFrom(
+            ref self: ContractState,
+            from: ContractAddress,
+            to: ContractAddress,
+            tokenId: u256,
+            data: Span<felt252>
+        ) {
+            ERC721Impl::safe_transfer_from(ref self, from, to, tokenId, data)
+        }
     }
 
     #[external(v0)]
-    fn transferFrom(
-        ref self: ContractState, from: ContractAddress, to: ContractAddress, token_id: u128
-    ) {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721Impl::transfer_from(ref state, from, to, token_id.into());
+    impl ERC721MetadataCamelOnlyImpl of interface::IERC721MetadataCamelOnly<ContractState> {
+        fn tokenURI(self: @ContractState, tokenId: u256) -> felt252 {
+            ERC721MetadataImpl::token_uri(self, tokenId)
+        }
     }
 
     #[external(v0)]
-    fn approve(ref self: ContractState, to: ContractAddress, token_id: u128) {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721Impl::approve(ref state, to, token_id.into());
-    }
-
-    #[external(v0)]
-    fn setApprovalForAll(ref self: ContractState, operator: ContractAddress, approved: bool) {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721Impl::set_approval_for_all(ref state, operator, approved);
-    }
-
-    #[external(v0)]
-    fn getApproved(self: @ContractState, token_id: u128) -> ContractAddress {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721Impl::get_approved(@state, token_id.into())
-    }
-
-    #[external(v0)]
-    fn isApprovedForAll(
-        self: @ContractState, owner: ContractAddress, operator: ContractAddress
-    ) -> bool {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721Impl::is_approved_for_all(@state, owner, operator)
-    }
-
-    #[external(v0)]
-    fn name(self: @ContractState) -> felt252 {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721MetadataImpl::name(@state)
-    }
-
-    #[external(v0)]
-    fn symbol(self: @ContractState) -> felt252 {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721MetadataImpl::symbol(@state)
-    }
-
-    #[external(v0)]
-    fn tokenURI(self: @ContractState, token_id: u128) -> felt252 {
-        let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ERC721MetadataImpl::token_uri(@state, token_id.into())
-    }
-
-    #[external(v0)]
-    fn supportInterface(self: @ContractState, interface_id: felt252) -> bool {
+    fn support_interface(self: @ContractState, interface_id: felt252) -> bool {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ISRC5::supports_interface(@state, interface_id)
     }
 
+    #[external(v0)]
+    fn supportInterface(self: @ContractState, interfaceId: felt252) -> bool {
+        support_interface(self, interfaceId)
+    }
+
     // ------ Dungeon -------
     #[external(v0)]
-    fn get_seeds(self: @ContractState, token_id: u128) -> u256 {
-        is_valid(self, token_id.into());
-        self.seeds.read(token_id)
+    fn get_seeds(self: @ContractState, token_id: u256) -> u256 {
+        is_valid(self, token_id);
+        self.seeds.read(token_id.try_into().unwrap())
     }
 
     #[external(v0)]
-    fn token_URI_not_work_yet(self: @ContractState, token_id: u128) -> Span<felt252> {
-        is_valid(self, token_id.into());
+    fn token_URI_not_work_yet(self: @ContractState, token_id: u256) -> Span<felt252> {
+        is_valid(self, token_id);
         let dungeon = generate_dungeon(self, token_id);
-        render_token_URI(self, token_id.into(), dungeon).span()
+        render_token_URI(self, token_id, dungeon).span()
     }
 
     #[external(v0)]
-    fn get_svg(self: @ContractState, token_id: u128) -> Array<felt252> {
-        is_valid(self, token_id.into());
+    fn get_svg(self: @ContractState, token_id: u256) -> Array<felt252> {
+        is_valid(self, token_id);
         draw(self, generate_dungeon(self, token_id))
     }
 
     #[external(v0)]
-    fn generate_dungeon(self: @ContractState, token_id: u128) -> DungeonSerde {
-        is_valid(self, token_id.into());
-        let seed: u256 = self.seeds.read(token_id);
+    fn generate_dungeon(self: @ContractState, token_id: u256) -> DungeonSerde {
+        is_valid(self, token_id);
+        let seed: u256 = self.seeds.read(token_id.try_into().unwrap());
         let size = get_size_in(seed);
 
-        let dungeon = self.dungeons.read(token_id);
+        let dungeon = self.dungeons.read(token_id.try_into().unwrap());
         if dungeon.layout.first == 0 && dungeon.layout.second == 0 && dungeon.layout.third == 0 {
             let dungeon = generate_dungeon_in(self, seed, size);
         }
@@ -530,11 +614,11 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn get_entities(self: @ContractState, token_id: u128) -> EntityDataSerde {
+    fn get_entities(self: @ContractState, token_id: u256) -> EntityDataSerde {
         // 'get_entities'.print();
         // is_valid(self, token_id);
 
-        let seed = self.seeds.read(token_id);
+        let seed = self.seeds.read(token_id.try_into().unwrap());
         let (x_array, y_array, t_array) = generator::get_entities(seed, get_size_in(seed));
 
         EntityDataSerde { x: x_array.span(), y: y_array.span(), entity_data: t_array.span() }
@@ -558,16 +642,16 @@ mod Dungeons {
     // --------------------------------------------- Seeder --------------------------------------------
 
     // for testnet only
-    fn get_seed(token_id: u128) -> u256 {
+    fn get_seed(token_id: u256) -> u256 {
         let block_time = starknet::get_block_timestamp();
         let b_u256_time: u256 = block_time.into();
-        let input = array![b_u256_time, token_id.into()];
+        let input = array![b_u256_time, token_id];
         let seed = keccak::keccak_u256s_be_inputs(input.span());
         seed
     }
 
     #[external(v0)]
-    fn get_size(self: @ContractState, token_id: u128) -> u128 {
+    fn get_size(self: @ContractState, token_id: u256) -> u128 {
         get_size_in(get_seed(token_id))
     }
 
@@ -576,7 +660,7 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn get_environment(self: @ContractState, token_id: u128) -> u8 {
+    fn get_environment(self: @ContractState, token_id: u256) -> u8 {
         get_environment_in(self, get_seed(token_id))
     }
 
@@ -600,7 +684,7 @@ mod Dungeons {
 
 
     #[external(v0)]
-    fn get_name(self: @ContractState, token_id: u128) -> (Array<felt252>, felt252, u8) {
+    fn get_name(self: @ContractState, token_id: u256) -> (Array<felt252>, felt252, u8) {
         get_name_in(self, get_seed(token_id))
     }
 
