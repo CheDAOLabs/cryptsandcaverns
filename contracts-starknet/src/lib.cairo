@@ -156,6 +156,43 @@ mod Dungeons {
         token_id: u128
     }
 
+    // #[event]
+    // #[derive(Drop, starknet::Event)]
+    // enum Event {
+    //     Transfer: Transfer,
+    //     Approval: Approval,
+    //     ApprovalForAll: ApprovalForAll
+    // }
+
+    // #[derive(Drop, starknet::Event)]
+    // struct Transfer {
+    //     #[key]
+    //     from: ContractAddress,
+    //     #[key]
+    //     to: ContractAddress,
+    //     #[key]
+    //     token_id: u256
+    // }
+
+    // #[derive(Drop, starknet::Event)]
+    // struct Approval {
+    //     #[key]
+    //     owner: ContractAddress,
+    //     #[key]
+    //     approved: ContractAddress,
+    //     #[key]
+    //     token_id: u256
+    // }
+
+    // #[derive(Drop, starknet::Event)]
+    // struct ApprovalForAll {
+    //     #[key]
+    //     owner: ContractAddress,
+    //     #[key]
+    //     operator: ContractAddress,
+    //     approved: bool
+    // }
+
     // ------------------------------------------- Storage -------------------------------------------
 
     #[storage]
@@ -436,14 +473,12 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    impl ERC721EnumerableCamelOnly of IERC721EnumerableCamelOnly<ContractState>{
+    impl ERC721EnumerableCamelOnly of IERC721EnumerableCamelOnly<ContractState> {
         fn totalSupply(self: @ContractState) -> u256 {
             ERC721Enumerable::total_supply(self)
         }
 
-        fn tokenOfOwnerByIndex(
-            self: @ContractState, owner: ContractAddress, index: u256
-        ) -> u256 {
+        fn tokenOfOwnerByIndex(self: @ContractState, owner: ContractAddress, index: u256) -> u256 {
             ERC721Enumerable::token_of_owner_by_index(self, owner, index)
         }
 
@@ -622,14 +657,14 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn support_interface(self: @ContractState, interface_id: felt252) -> bool {
+    fn supports_interface(self: @ContractState, interface_id: felt252) -> bool {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ISRC5::supports_interface(@state, interface_id)
     }
 
     #[external(v0)]
-    fn supportInterface(self: @ContractState, interfaceId: felt252) -> bool {
-        support_interface(self, interfaceId)
+    fn supportsInterface(self: @ContractState, interfaceId: felt252) -> bool {
+        supports_interface(self, interfaceId)
     }
 
     // ------ Dungeon -------
