@@ -607,6 +607,7 @@ mod Dungeons {
         }
 
         fn token_uri(self: @ContractState, token_id: u256) -> felt252 {
+            // token_URI_not_work_yet(self, token_id);
             let mut state = ERC721::unsafe_new_contract_state();
             ERC721::ERC721MetadataImpl::token_uri(@state, token_id)
         }
@@ -679,10 +680,9 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn token_URI_not_work_yet(self: @ContractState, token_id: u256) -> Span<felt252> {
+    fn token_URI(self: @ContractState, token_id: u256) -> Span<felt252> {
         is_valid(self, token_id);
-        let dungeon = generate_dungeon(self, token_id);
-        render_token_URI(self, token_id, dungeon).span()
+        render_token_URI(self, token_id, generate_dungeon(self, token_id)).span()
     }
 
     #[external(v0)]
@@ -1134,6 +1134,7 @@ mod Dungeons {
 
         // Base64 Encode svg and output
         let mut json: Array<felt252> = ArrayTrait::new();
+        json.append('data:application/json,');
         json.append('{"name": "Crypts and Caverns #');
         json.append(tokenId.try_into().unwrap());
         json.append('", "description": "Crypts and ');
@@ -1180,16 +1181,18 @@ mod Dungeons {
             json.append('Cavern');
         }
         json.append('"}],"image":');
-        json.append(' "data:image/svg+xml;base64,');
+        // json.append(' "data:image/svg+xml;base64,');
         // TODO base64 encode svg
 
-        json.append('"}');
+        json = append(json, output.span());
+
+        // json.append('"}');
         // TODO base64 encode json
 
-        output.append('data:application/json;base64,');
+        // output.append('data:application/json;base64,');
         // output.append(json);
 
-        output
+        json
     }
 
     // ------------------------------------------ Constructor ------------------------------------------
