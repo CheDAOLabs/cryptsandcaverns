@@ -3,7 +3,7 @@ mod utils;
 
 // --------------------------------------------- interface -------------------------------------------
 
-// use starknet::ContractAddress;
+use starknet::ContractAddress;
 // #[starknet::interface]
 // trait IERC721<TState> {
 //     fn balance_of(self: @TState, account: ContractAddress) -> u256;
@@ -41,10 +41,27 @@ mod utils;
 //     fn isApprovedForAll(self: @TState, owner: ContractAddress, operator: ContractAddress) -> bool;
 // }
 
+#[starknet::interface]
+trait IERC721Enumerable<TContractState> {
+    fn total_supply(self: @TContractState) -> u256;
+    fn token_by_index(self: @TContractState, index: u256) -> u256;
+    fn token_of_owner_by_index(self: @TContractState, owner: ContractAddress, index: u256) -> u256;
+}
+
+#[starknet::interface]
+trait IERC721EnumerableCamelOnly<TContractState> {
+    fn totalSupply(self: @TContractState) -> u256;
+    fn tokenByIndex(self: @TContractState, index: u256) -> u256;
+    fn tokenOfOwnerByIndex(self: @TContractState, owner: ContractAddress, index: u256) -> u256;
+}
+
+// -------------------------------------------- Contract --------------------------------------------
+
 #[starknet::contract]
 mod Dungeons {
     // ------------------------------------------ Imports -------------------------------------------
 
+    use core::traits::TryInto;
     use starknet::{
         ContractAddress, SyscallResult, info::get_caller_address,
         storage_access::{Store, StorageAddress, StorageBaseAddress}
@@ -54,6 +71,7 @@ mod Dungeons {
         utils::{random::{random}, bit_operation::BitOperationTrait, pack::{PackTrait, Pack}},
         dungeons_generator as generator
     };
+    use super::{IERC721Enumerable, IERC721EnumerableCamelOnly};
 
     use openzeppelin::token::erc721::{ERC721, interface};
 
@@ -142,8 +160,8 @@ mod Dungeons {
 
     #[storage]
     struct Storage {
-        dungeons: LegacyMap::<u128, Dungeon>,
         // -------------- dungeons ----------------
+        dungeons: LegacyMap::<u128, Dungeon>,
         // price: u256,
         // loot:ContractAddress,
         seeds: LegacyMap::<u128, u256>,
@@ -162,7 +180,10 @@ mod Dungeons {
         // To calculate, multiply environment (int 0-5) by 4 and add the above numbers.
         colors: LegacyMap::<u8, felt252>,
         // Names mapped to the above colors
-        environmentName: LegacyMap::<u8, felt252>
+        environmentName: LegacyMap::<u8, felt252>,
+        // -------------- enumerable -------------
+        owned_tokens: LegacyMap::<(ContractAddress, u128), u128>,
+        owned_token_index: LegacyMap::<u128, u128>
     }
 
     impl StoreDungeon of Store<Dungeon> {
@@ -394,10 +415,47 @@ mod Dungeons {
     //     }
     // }
 
+    // ---- enumerable -----
+
+    #[external(v0)]
+    impl ERC721Enumerable of IERC721Enumerable<ContractState> {
+        fn total_supply(self: @ContractState) -> u256 {
+            self.last_mint.read().into()
+        }
+
+        fn token_of_owner_by_index(
+            self: @ContractState, owner: ContractAddress, index: u256
+        ) -> u256 {
+            self.owned_tokens.read((owner, index.try_into().unwrap())).into()
+        }
+
+        fn token_by_index(self: @ContractState, index: u256) -> u256 {
+            // we don't have burnable feature
+            index
+        }
+    }
+
+    #[external(v0)]
+    impl ERC721EnumerableCamelOnly of IERC721EnumerableCamelOnly<ContractState>{
+        fn totalSupply(self: @ContractState) -> u256 {
+            ERC721Enumerable::total_supply(self)
+        }
+
+        fn tokenOfOwnerByIndex(
+            self: @ContractState, owner: ContractAddress, index: u256
+        ) -> u256 {
+            ERC721Enumerable::token_of_owner_by_index(self, owner, index)
+        }
+
+        fn tokenByIndex(self: @ContractState, index: u256) -> u256 {
+            ERC721Enumerable::token_by_index(self, index)
+        }
+    }
+
     // ------ ERC721 -------
 
     #[external(v0)]
-    fn mint(ref self: ContractState) -> u128 {
+    fn mint(ref self: ContractState) {
         // assert(self.last_mint.read() < 9000, 'Token sold out');
         // assert(!self.restricted.read(), 'Dungeon is restricted');
 
@@ -414,8 +472,31 @@ mod Dungeons {
         // store generate result into storage
         self.dungeons.write(token_id, generate_dungeon_in(@self, seed, get_size_in(seed)));
 
-        token_id
+        let index = ERC721Impl::balance_of(@self, user);
+        self.owned_tokens.write((user, index.try_into().unwrap()), token_id);
+        self.owned_token_index.write(token_id, index.try_into().unwrap());
     }
+
+    fn update_owner(
+        ref self: ContractState, token_id: u128, from: ContractAddress, to: ContractAddress
+    ) {
+        let balance: u128 = ERC721Impl::balance_of(@self, from).try_into().unwrap() + 1;
+        let index_origin = self.owned_token_index.read(token_id);
+
+        let mut insert = 0;
+        if balance != index_origin + 1 {
+            insert = self.owned_tokens.read((from, balance - 1));
+            self.owned_tokens.write((from, balance - 1), 0);
+            self.owned_token_index.write(insert, index_origin);
+        }
+        self.owned_tokens.write((from, index_origin), insert);
+
+        let balance_to = ERC721Impl::balance_of(@self, to).try_into().unwrap() - 1;
+        self.owned_tokens.write((to, balance_to), token_id);
+
+        self.owned_token_index.write(token_id, balance_to);
+    }
+
 
     #[external(v0)]
     impl ERC721Impl of interface::IERC721<ContractState> {
@@ -438,6 +519,7 @@ mod Dungeons {
         ) {
             let mut state = ERC721::unsafe_new_contract_state();
             ERC721::ERC721Impl::safe_transfer_from(ref state, from, to, token_id, data);
+            update_owner(ref self, token_id.try_into().unwrap(), from, to)
         }
 
         fn transfer_from(
@@ -445,6 +527,7 @@ mod Dungeons {
         ) {
             let mut state = ERC721::unsafe_new_contract_state();
             ERC721::ERC721Impl::transfer_from(ref state, from, to, token_id);
+            update_owner(ref self, token_id.try_into().unwrap(), from, to);
         }
 
         fn approve(ref self: ContractState, to: ContractAddress, token_id: u256) {
