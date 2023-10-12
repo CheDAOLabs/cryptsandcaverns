@@ -6,7 +6,7 @@ For more infomation, you can check [README](https://github.com/CheDAOLabs/crypts
 
 ## Goerli Address
 ```
-0x0148079ed14213e39516a4d366395b0feef93f6f31af364a1022bb2da454d7fa
+0x078fcf70e22f475b8ffde567f8118e5d99ded383da150e01e55fa79251c7c808
 ```
 
 # Starknet / Cairo
