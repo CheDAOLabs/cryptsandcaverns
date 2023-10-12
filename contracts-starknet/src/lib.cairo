@@ -42,6 +42,18 @@ use starknet::ContractAddress;
 // }
 
 #[starknet::interface]
+trait IERC721Metadata<TState> {
+    fn name(self: @TState) -> felt252;
+    fn symbol(self: @TState) -> felt252;
+    fn token_uri(self: @TState, token_id: u256) -> Array<felt252>;
+}
+
+#[starknet::interface]
+trait IERC721MetadataCamelOnly<TState> {
+    fn tokenURI(self: @TState, tokenId: u256) -> Array<felt252>;
+}
+
+#[starknet::interface]
 trait IERC721Enumerable<TContractState> {
     fn total_supply(self: @TContractState) -> u256;
     fn token_by_index(self: @TContractState, index: u256) -> u256;
@@ -594,8 +606,10 @@ mod Dungeons {
         }
     }
 
+    use super::IERC721Metadata;
+    use super::IERC721MetadataCamelOnly;
     #[external(v0)]
-    impl ERC721MetadataImpl of interface::IERC721Metadata<ContractState> {
+    impl ERC721MetadataImpl of IERC721Metadata<ContractState> {
         fn name(self: @ContractState) -> felt252 {
             let mut state = ERC721::unsafe_new_contract_state();
             ERC721::ERC721MetadataImpl::name(@state)
@@ -606,10 +620,17 @@ mod Dungeons {
             ERC721::ERC721MetadataImpl::symbol(@state)
         }
 
-        fn token_uri(self: @ContractState, token_id: u256) -> felt252 {
-            // token_URI_not_work_yet(self, token_id);
-            let mut state = ERC721::unsafe_new_contract_state();
-            ERC721::ERC721MetadataImpl::token_uri(@state, token_id)
+        fn token_uri(self: @ContractState, token_id: u256) -> Array<felt252> {
+            token_URI(self, token_id)
+        // let mut state = ERC721::unsafe_new_contract_state();
+        // ERC721::ERC721MetadataImpl::token_uri(@state, token_id)
+        }
+    }
+
+    #[external(v0)]
+    impl ERC721MetadataCamelOnlyImpl of IERC721MetadataCamelOnly<ContractState> {
+        fn tokenURI(self: @ContractState, tokenId: u256) -> Array<felt252> {
+            ERC721MetadataImpl::token_uri(self, tokenId)
         }
     }
 
@@ -655,13 +676,6 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    impl ERC721MetadataCamelOnlyImpl of interface::IERC721MetadataCamelOnly<ContractState> {
-        fn tokenURI(self: @ContractState, tokenId: u256) -> felt252 {
-            ERC721MetadataImpl::token_uri(self, tokenId)
-        }
-    }
-
-    #[external(v0)]
     fn supports_interface(self: @ContractState, interface_id: felt252) -> bool {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::ISRC5::supports_interface(@state, interface_id)
@@ -680,9 +694,9 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn token_URI(self: @ContractState, token_id: u256) -> Span<felt252> {
+    fn token_URI(self: @ContractState, token_id: u256) -> Array<felt252> {
         is_valid(self, token_id);
-        render_token_URI(self, token_id, generate_dungeon(self, token_id)).span()
+        render_token_URI(self, token_id, generate_dungeon(self, token_id))
     }
 
     #[external(v0)]
@@ -1153,8 +1167,6 @@ mod Dungeons {
         json.append('"}, {"trait_type": ');
         json.append('"size", "value": "');
         json.append(dungeon.size.into());
-        json.append('x');
-        json.append(dungeon.size.into());
         json.append('"}, {"trait_type": ');
         json.append('"environment", "value": "');
         json.append(self.environmentName.read(dungeon.environment));
@@ -1185,8 +1197,8 @@ mod Dungeons {
         // TODO base64 encode svg
 
         json = append(json, output.span());
+        json.append('}');
 
-        // json.append('"}');
         // TODO base64 encode json
 
         // output.append('data:application/json;base64,');
