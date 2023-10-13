@@ -90,6 +90,28 @@ mod Dungeons {
     // ------------------------------------------- Structs -------------------------------------------
 
     #[derive(Copy, Drop, Serde)]
+    struct DungeonDojo {
+        size: u8,
+        environment: u8,
+        structure: u8,
+        legendary: u8,
+        layout: Pack,
+        doors: Pack,
+        points: Pack,
+        affinity: felt252,
+        dungeon_name: Name
+    }
+
+    #[derive(Copy, Drop, Serde)]
+    struct Name {
+        first: felt252,
+        second: felt252,
+        third: felt252,
+        fourth: felt252,
+        fifth: felt252
+    }
+
+    #[derive(Copy, Drop, Serde)]
     struct DungeonSerde {
         size: u8,
         environment: u8,
@@ -729,6 +751,66 @@ mod Dungeons {
             },
             affinity: dungeon.affinity,
             dungeon_name: dungeon.dungeon_name.span()
+        }
+    }
+
+    #[external(v0)]
+    fn generate_dungeon_dojo(self: @ContractState, token_id: u256) -> DungeonDojo {
+        is_valid(self, token_id);
+        let seed: u256 = self.seeds.read(token_id.try_into().unwrap());
+        let size = get_size_in(seed);
+
+        let dungeon = generate_dungeon_in_dojo(self, seed, size);
+
+        DungeonDojo {
+            size: dungeon.size,
+            environment: dungeon.environment,
+            structure: dungeon.structure,
+            legendary: dungeon.legendary,
+            layout: dungeon.layout,
+            doors: dungeon.doors,
+            points: dungeon.points,
+            affinity: dungeon.affinity,
+            dungeon_name: dungeon.dungeon_name
+        }
+    }
+
+    fn name_to_felt252(name: Array<felt252>) -> Name {
+        let len = name.len();
+        if len == 1 {
+            Name { first: *name[0], second: '', third: '', fourth: '', fifth: '' }
+        } else if len == 3 {
+            Name { first: *name[0], second: *name[1], third: *name[2], fourth: '', fifth: '' }
+        } else if len == 5 {
+            Name {
+                first: *name[0],
+                second: *name[1],
+                third: *name[2],
+                fourth: *name[3],
+                fifth: *name[4]
+            }
+        } else {
+            Name { first: '', second: '', third: '', fourth: '', fifth: '' }
+        }
+    }
+
+    fn generate_dungeon_in_dojo(self: @ContractState, seed: u256, size: u128) -> DungeonDojo {
+        let (points, doors) = generator::generate_entities(seed, size);
+        let (mut layout, structure) = get_layout(self, seed, size);
+        let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
+
+        DungeonDojo {
+            size: size.try_into().unwrap(),
+            environment: get_environment_in(self, seed),
+            structure: structure,
+            legendary: legendary,
+            layout: layout,
+            doors: doors,
+            points: points,
+            affinity: affinity,
+            dungeon_name: {
+                name_to_felt252(dungeon_name)
+            }
         }
     }
 
