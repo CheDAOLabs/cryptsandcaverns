@@ -15,6 +15,16 @@ impl PackImpl of PackTrait {
         Pack { first: 0, second: 0, third: 0, }
     }
 
+    /// Sets a bit at the specified position in a `Pack` value.
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - A reference to a `Pack` struct representing the value to modify.
+    /// * `position` - An `u128` representing the position of the bit to set.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the `position` is greater than or equal to 625.
     fn set_bit(ref self: Pack, position: u128) {
         assert(position < 625, 'invalid position');
         if position < 248 {
@@ -35,6 +45,20 @@ impl PackImpl of PackTrait {
         }
     }
 
+    /// Retrieves the value of a bit at the specified position in a `Pack` value.
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - A reference to a `Pack` struct representing the value to retrieve the bit from.
+    /// * `position` - An `u128` representing the position of the bit to retrieve.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the `position` is greater than or equal to 625.
+    ///
+    /// # Returns
+    ///
+    /// A boolean value indicating whether the bit at the specified position is set (`true`) or not (`false`).
     fn get_bit(ref self: Pack, position: u128) -> bool {
         assert(position < 625, 'invalid position');
         if position < 248 {
@@ -46,6 +70,16 @@ impl PackImpl of PackTrait {
         }
     }
 
+    /// Adds the corresponding bits of two `Pack` values and stores the result in the current `Pack` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - A reference to a `Pack` struct representing the current value.
+    /// * `other` - A `Pack` struct representing the value to be added.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the addition of any bit overflows the maximum value of `u256`.
     fn add_bit(ref self: Pack, other: Pack) {
         let mut result: u256 = self.first.into() | other.first.into();
         self.first = result.try_into().expect('add bit overflow');
@@ -57,6 +91,16 @@ impl PackImpl of PackTrait {
         self.third = result.try_into().expect('add bit overflow');
     }
 
+    /// Subtracts the corresponding bits of two `Pack` values and stores the result in the current `Pack` instance.
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - A reference to a `Pack` struct representing the current value.
+    /// * `other` - A `Pack` struct representing the value to be subtracted.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the subtraction of any bit overflows the maximum value of `u256`.
     fn subtract_bit(ref self: Pack, other: Pack) {
         let mut result: u256 = self.first.into() & ~other.first.into();
         self.first = result.try_into().expect('sub bit overflow');
@@ -68,20 +112,23 @@ impl PackImpl of PackTrait {
         self.third = result.try_into().expect('sub bit overflow');
     }
 
+    /// Counts the number of set bits in the `Pack` value.
+    ///
+    /// # Arguments
+    ///
+    /// * `self` - A reference to a `Pack` struct representing the value to count the bits in.
+    ///
+    /// # Returns
+    ///
+    /// The total count of set bits as a `u128`.
     fn count_bit(ref self: Pack) -> u128 {
         let mut count: u128 = 0;
         count_loop(self.first.into(), count)
             + count_loop(self.second.into(), count)
             + count_loop(self.third.into(), count)
     }
-//
-// fn delete_bit(ref sel: Pack, mut position: u128) {
-//     assert(position < 625, 'invalid position');
-// }
-
 }
 
-// const range_max: u256 = 0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
 
 fn count_loop(mut value: u256, mut count: u128) -> u128 {
     if value != 0 {
