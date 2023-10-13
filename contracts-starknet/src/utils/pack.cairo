@@ -1,6 +1,5 @@
 use super::pow::get_pow;
 
-
 #[derive(Copy, Drop, Serde)]
 struct Pack {
     first: felt252,
@@ -8,20 +7,6 @@ struct Pack {
     third: felt252
 }
 
-// #[test]
-// #[available_gas(3000000)]
-// fn tttt() {
-//     let mut floor = PackTrait::new();
-//     floor.first = 0x780007800078000780007800000000000000000000000c0000;
-//     floor.second = 0x800000000000000000000000000000000000000000000000000000000000000;
-//     // floor.set_bit(253);
-//     let pow: u256 = 0x400000000000000000000000000000000000000000000000000000000000000;
-//     let result = floor.second.into() | pow;
-//     p(result);
-//     let position: u128 = 253;
-//     let count = 251 - position % 252;
-//     p(count);
-// }
 
 #[generate_trait]
 impl PackImpl of PackTrait {
