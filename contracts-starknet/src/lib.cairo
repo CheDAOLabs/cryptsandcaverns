@@ -108,7 +108,7 @@ mod Dungeons {
         second: felt252,
         third: felt252,
         fourth: felt252,
-        fifth:felt252
+        fifth: felt252
     }
 
     #[derive(Copy, Drop, Serde)]
@@ -778,13 +778,19 @@ mod Dungeons {
     fn name_to_felt252(name: Array<felt252>) -> Name {
         let len = name.len();
         if len == 1 {
-           Name {first:*name[0], second:'',third: '',fourth: '',fifth: ''}
+            Name { first: *name[0], second: '', third: '', fourth: '', fifth: '' }
         } else if len == 3 {
-            Name{first:*name[0], second:*name[1],third: *name[2],fourth: '', fifth:''}
+            Name { first: *name[0], second: *name[1], third: *name[2], fourth: '', fifth: '' }
         } else if len == 5 {
-            Name{first:*name[0], second:*name[1],third: *name[2],fourth: *name[3],fifth: *name[4]}
+            Name {
+                first: *name[0],
+                second: *name[1],
+                third: *name[2],
+                fourth: *name[3],
+                fifth: *name[4]
+            }
         } else {
-            Name{first:'', second:'', third:'', fourth:'', fifth:''}
+            Name { first: '', second: '', third: '', fourth: '', fifth: '' }
         }
     }
 
