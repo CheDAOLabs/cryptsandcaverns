@@ -1,5 +1,20 @@
 // ------------------------------------ random --------------------------------------
 
+/// Generates a random number within a specified range using a seed value.
+///
+/// # Arguments
+///
+/// * `seed` - A `u256` representing the seed value for random number generation.
+/// * `min` - An `u128` representing the minimum value (inclusive) of the random number range.
+/// * `max` - An `u128` representing the maximum value (exclusive) of the random number range.
+///
+/// # Returns
+///
+/// A random number within the specified range as a `u128`.
+///
+/// # Panics
+///
+/// This function will panic if the result exceeds the range of `u256`.
 fn random(seed: u256, min: u128, max: u128) -> u128 {
     let output: u256 = keccak::keccak_u256s_be_inputs(array![seed].span());
 
