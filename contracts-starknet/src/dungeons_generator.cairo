@@ -304,7 +304,12 @@ fn generate_entities(seed: u256, size: u128) -> (Pack, Pack) {
         )
     } else {
         let mut cavern: Pack = generate_cavern(ref settings);
-        let num_tiles = cavern.count_bit();
+        let mut num_tiles = cavern.count_bit();
+
+        // to avoid calculation error
+        if num_tiles <= 6 {
+            num_tiles = 7;
+        }
 
         let mut points: Pack = generate_points(
             ref settings, ref cavern, 12 / square_root(num_tiles - 6)
