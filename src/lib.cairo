@@ -533,7 +533,7 @@ mod Dungeons {
         let mut state = ERC721::unsafe_new_contract_state();
         ERC721::InternalImpl::_mint(ref state, user, token_id.into());
         // store generate result into storage
-        self.dungeons.write(token_id, generate_dungeon_in(@self, seed, get_size_in(seed)));
+        // self.dungeons.write(token_id, generate_dungeon_in(@self, seed, get_size_in(seed)));
 
         let index = ERC721Impl::balance_of(@self, user);
         self.owned_tokens.write((user, index.try_into().unwrap()), token_id);
