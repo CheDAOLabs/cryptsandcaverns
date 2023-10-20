@@ -540,8 +540,8 @@ mod Dungeons {
         self.owned_token_index.write(token_id, index.try_into().unwrap());
 
         let token_id: u256 = token_id.into();
-        self.emit(Minted { account: user, token_id });
-        self.emit(Transfer { from: Zeroable::zero(), to: user, token_id });
+        // self.emit(Minted { account: user, token_id });
+        // self.emit(Transfer { from: Zeroable::zero(), to: user, token_id });
     }
 
     fn update_owner(
@@ -587,7 +587,7 @@ mod Dungeons {
             let mut state = ERC721::unsafe_new_contract_state();
             ERC721::ERC721Impl::safe_transfer_from(ref state, from, to, token_id, data);
             update_owner(ref self, token_id.try_into().unwrap(), from, to);
-            self.emit(Transfer { from, to, token_id });
+            // self.emit(Transfer { from, to, token_id });
         }
 
         fn transfer_from(
@@ -596,14 +596,14 @@ mod Dungeons {
             let mut state = ERC721::unsafe_new_contract_state();
             ERC721::ERC721Impl::transfer_from(ref state, from, to, token_id);
             update_owner(ref self, token_id.try_into().unwrap(), from, to);
-            self.emit(Transfer { from, to, token_id });
+            // self.emit(Transfer { from, to, token_id });
         }
 
         fn approve(ref self: ContractState, to: ContractAddress, token_id: u256) {
             let mut state = ERC721::unsafe_new_contract_state();
             ERC721::ERC721Impl::approve(ref state, to, token_id);
             let owner = get_caller_address();
-            self.emit(Approval { owner, approved: to, token_id });
+            // self.emit(Approval { owner, approved: to, token_id });
         }
 
         fn set_approval_for_all(
@@ -612,7 +612,7 @@ mod Dungeons {
             let mut state = ERC721::unsafe_new_contract_state();
             ERC721::ERC721Impl::set_approval_for_all(ref state, operator, approved);
             let owner = get_caller_address();
-            self.emit(ApprovalForAll { owner, operator, approved });
+            // self.emit(ApprovalForAll { owner, operator, approved });
         }
 
         fn get_approved(self: @ContractState, token_id: u256) -> ContractAddress {
