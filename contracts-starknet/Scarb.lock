@@ -5,8 +5,14 @@ version = 1
 name = "cc_starknet"
 version = "0.1.1"
 dependencies = [
+ "graffiti",
  "openzeppelin",
 ]
+
+[[package]]
+name = "graffiti"
+version = "0.1.0"
+source = "git+https://github.com/milancermak/graffiti.git?tag=v0.1.0#dbf2c1e1d6546b29a31b994d5c4c492b5ea4d990"
 
 [[package]]
 name = "openzeppelin"
