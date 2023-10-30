@@ -4,6 +4,7 @@ mod utils;
 // --------------------------------------------- interface -------------------------------------------
 
 use starknet::ContractAddress;
+
 // #[starknet::interface]
 // trait IERC721<TState> {
 //     fn balance_of(self: @TState, account: ContractAddress) -> u256;
@@ -71,6 +72,7 @@ trait IERC721EnumerableCamelOnly<TContractState> {
 
 #[starknet::contract]
 mod Dungeons {
+    
     // ------------------------------------------ Imports -------------------------------------------
 
     use core::traits::TryInto;
@@ -700,7 +702,7 @@ mod Dungeons {
     #[external(v0)]
     fn supports_interface(self: @ContractState, interface_id: felt252) -> bool {
         let mut state = ERC721::unsafe_new_contract_state();
-        ERC721::ISRC5::supports_interface(@state, interface_id)
+        ERC721::SRC5Impl::supports_interface(@state, interface_id)
     }
 
     #[external(v0)]

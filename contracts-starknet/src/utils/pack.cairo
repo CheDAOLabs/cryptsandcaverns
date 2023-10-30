@@ -140,18 +140,22 @@ fn count_loop(mut value: u256, mut count: u128) -> u128 {
     }
 }
 
-fn p<T, impl TPrint: PrintTrait<T>>(t: T) {
-    t.print();
+#[cfg(test)]
+mod test {
+    use super::{Pack, PackTrait};
+
+    fn p<T, impl TPrint: PrintTrait<T>>(t: T) {
+        t.print();
+    }
+
+    use debug::PrintTrait;
+
+    #[test]
+    // #[ignore]
+    #[available_gas(3000000)]
+    fn test() {
+        let mut pack: Pack = Pack { first: 0, second: 0, third: 0 };
+        pack.set_bit(66);
+        assert(pack.get_bit(66), 'set bit');
+    }
 }
-
-use debug::PrintTrait;
-
-#[test]
-// #[ignore]
-#[available_gas(3000000)]
-fn test() {
-    let mut pack: Pack = Pack { first: 0, second: 0, third: 0 };
-    pack.set_bit(66);
-    assert(pack.get_bit(66), 'set bit');
-}
-

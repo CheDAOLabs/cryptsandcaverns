@@ -537,131 +537,135 @@ fn square_root(origin: u128) -> u128 {
 }
 
 // ------------------------------------------- Test -------------------------------------------
+#[cfg(test)]
+mod test {
+    use super::{PackTrait, Pack, square_root, get_layout, get_entities};
 
-fn p<T, impl TPrint: PrintTrait<T>>(t: T) {
-    t.print();
-}
-
-// Libfunc print is not allowed in the libfuncs list
-use debug::PrintTrait;
-
-#[test]
-// #[ignore]
-#[available_gas(30000000)]
-fn test_set_bit() {
-    let mut map: Pack = PackTrait::new();
-    map.first = 2;
-    map.set_bit(20);
-    assert(map.first == 0x800000000000000000000000000000000000000000000000000000002, 'set bit');
-    assert(!map.get_bit(19), 'get bit of index 19');
-    assert(map.get_bit(20), 'get bit of index 20');
-    assert(map.count_bit() == 2, 'count bit');
-
-    let mut another_map: Pack = PackTrait::new();
-    another_map.first = 3;
-    another_map.set_bit(30);
-    assert(another_map.count_bit() == 3, 'count bit');
-    map.add_bit(another_map);
-    assert(map.count_bit() == 4, 'add bit');
-    map.subtract_bit(another_map);
-    assert(map.count_bit() == 1, 'subtract bit');
-}
-
-#[test]
-#[available_gas(30000000)]
-fn test_sqr() {
-    assert(square_root(17) == 4, 'compute square root of 17');
-    assert(square_root(24) == 4, 'compute square root of 24');
-}
-
-#[test]
-// #[ignore]
-#[available_gas(300000000000000)]
-fn test_generate_room() {
-    {}
-    // tokenId 5678 cavern type
-    let seed = 54726856408304506636278424762823059598933394071647911965527120692794348915138;
-    let size = 20;
-
-    let (mut map, mut structure) = get_layout(seed, size);
-    // print_map(map, structure);
-    assert(
-        structure == 1
-            && map.first == 0x100001c030140201f020f902089c2088661b8641e0c07e0c0e47c1e66c14
-            && map.second == 0x62c1442c1c4781c6781c6384c6185c31cbc13c000000000000000000000000
-            && map.third == 0x0,
-        'cavern error'
-    );
-
-    // tokenId 5678 entities
-    let (x_array, y_array, t_array) = get_entities(seed, size);
-
-    // print_array(@x_array, @y_array, @t_array);
-    assert(*x_array.at(3) == 0x10, 'x error');
-    assert(*y_array.at(3) == 0x12, 'y error');
-    assert(*t_array.at(3) == 0x1, 't error');
-
-    {}
-    // tokenId 6666 room type
-    let seed: u256 = 6335337818598560499429733180295617724328926230334923097623654911070136911834;
-    let size = 17;
-
-    let (mut map, mut structure) = get_layout(seed, size);
-    // print_map(map, structure);
-    assert(
-        structure == 0
-            && map.first == 0x18000c0002003fbc1ffe03ef01f000f80000
-            && map.second == 0x0
-            && map.third == 0x0,
-        'room error'
-    );
-}
-
-fn print_map(map: Pack, structure: u8) {
-    '--------layout display--------'.print();
-    'structure'.print();
-    structure.print();
-
-    let mut value = map.first;
-    'map index'.print();
-    'first'.print();
-    'map value'.print();
-    value.print();
-
-    value = map.second;
-    'map index'.print();
-    'second'.print();
-    'map value'.print();
-    value.print();
-
-    value = map.third;
-    'map index'.print();
-    'third'.print();
-    'map value'.print();
-    value.print();
-}
-
-fn print_array(x_array: @Array<u8>, y_array: @Array<u8>, t_array: @Array<u8>) {
-    '--------entities display-------'.print();
-    let mut limit = 0;
-    loop {
-        if limit == x_array.len() {
-            break;
-        }
-
-        let x = *x_array.at(limit);
-        let y = *y_array.at(limit);
-        let t = *t_array.at(limit);
-        '-- group --'.print();
-        limit.print();
-        'x'.print();
-        x.print();
-        'y'.print();
-        y.print();
-        't'.print();
+    fn p<T, impl TPrint: PrintTrait<T>>(t: T) {
         t.print();
+    }
 
-        limit += 1;
-    };
+    // Libfunc print is not allowed in the libfuncs list
+    use debug::PrintTrait;
+
+    #[test]
+    // #[ignore]
+    #[available_gas(30000000)]
+    fn test_set_bit() {
+        let mut map: Pack = PackTrait::new();
+        map.first = 2;
+        map.set_bit(20);
+        assert(map.first == 0x800000000000000000000000000000000000000000000000000000002, 'set bit');
+        assert(!map.get_bit(19), 'get bit of index 19');
+        assert(map.get_bit(20), 'get bit of index 20');
+        assert(map.count_bit() == 2, 'count bit');
+
+        let mut another_map: Pack = PackTrait::new();
+        another_map.first = 3;
+        another_map.set_bit(30);
+        assert(another_map.count_bit() == 3, 'count bit');
+        map.add_bit(another_map);
+        assert(map.count_bit() == 4, 'add bit');
+        map.subtract_bit(another_map);
+        assert(map.count_bit() == 1, 'subtract bit');
+    }
+
+    #[test]
+    #[available_gas(30000000)]
+    fn test_sqr() {
+        assert(square_root(17) == 4, 'compute square root of 17');
+        assert(square_root(24) == 4, 'compute square root of 24');
+    }
+
+    #[test]
+    // #[ignore]
+    #[available_gas(300000000000000)]
+    fn test_generate_room() {
+        {}
+        // tokenId 5678 cavern type
+        let seed = 54726856408304506636278424762823059598933394071647911965527120692794348915138;
+        let size = 20;
+
+        let (mut map, mut structure) = get_layout(seed, size);
+        // print_map(map, structure);
+        assert(
+            structure == 1
+                && map.first == 0x100001c030140201f020f902089c2088661b8641e0c07e0c0e47c1e66c14
+                && map.second == 0x62c1442c1c4781c6781c6384c6185c31cbc13c000000000000000000000000
+                && map.third == 0x0,
+            'cavern error'
+        );
+
+        // tokenId 5678 entities
+        let (x_array, y_array, t_array) = get_entities(seed, size);
+
+        // print_array(@x_array, @y_array, @t_array);
+        assert(*x_array.at(3) == 0x10, 'x error');
+        assert(*y_array.at(3) == 0x12, 'y error');
+        assert(*t_array.at(3) == 0x1, 't error');
+
+        {}
+        // tokenId 6666 room type
+        let seed: u256 =
+            6335337818598560499429733180295617724328926230334923097623654911070136911834;
+        let size = 17;
+
+        let (mut map, mut structure) = get_layout(seed, size);
+        // print_map(map, structure);
+        assert(
+            structure == 0
+                && map.first == 0x18000c0002003fbc1ffe03ef01f000f80000
+                && map.second == 0x0
+                && map.third == 0x0,
+            'room error'
+        );
+    }
+
+    fn print_map(map: Pack, structure: u8) {
+        '--------layout display--------'.print();
+        'structure'.print();
+        structure.print();
+
+        let mut value = map.first;
+        'map index'.print();
+        'first'.print();
+        'map value'.print();
+        value.print();
+
+        value = map.second;
+        'map index'.print();
+        'second'.print();
+        'map value'.print();
+        value.print();
+
+        value = map.third;
+        'map index'.print();
+        'third'.print();
+        'map value'.print();
+        value.print();
+    }
+
+    fn print_array(x_array: @Array<u8>, y_array: @Array<u8>, t_array: @Array<u8>) {
+        '--------entities display-------'.print();
+        let mut limit = 0;
+        loop {
+            if limit == x_array.len() {
+                break;
+            }
+
+            let x = *x_array.at(limit);
+            let y = *y_array.at(limit);
+            let t = *t_array.at(limit);
+            '-- group --'.print();
+            limit.print();
+            'x'.print();
+            x.print();
+            'y'.print();
+            y.print();
+            't'.print();
+            t.print();
+
+            limit += 1;
+        };
+    }
 }
-

@@ -28,14 +28,20 @@ fn random(seed: u256, min: u128, max: u128) -> u128 {
     min + result.try_into().expect('over u256 range')
 }
 
-#[test]
-// #[ignore]
-#[available_gas(30000000)]
-fn test() {
-    let seed: u256 = 47644144660693649943980215435560498623172148321825190670936003990961659435532;
-    let min: u128 = 1;
-    let max: u128 = 15;
-    let result = random(seed, min, max);
-    assert(result == 9, 'random');
-}
+#[cfg(test)]
+mod test {
 
+    use super::random;
+
+    #[test]
+    // #[ignore]
+    #[available_gas(30000000)]
+    fn test() {
+        let seed: u256 =
+            47644144660693649943980215435560498623172148321825190670936003990961659435532;
+        let min: u128 = 1;
+        let max: u128 = 15;
+        let result = random(seed, min, max);
+        assert(result == 9, 'random');
+    }
+}
