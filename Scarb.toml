@@ -14,4 +14,4 @@ openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", ta
 # sierra = true
 casm = true
 
-[lib]
+
