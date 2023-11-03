@@ -995,21 +995,32 @@ export default {
   },
   methods: {
     handleChange() {
-      this.init();
-      this.load_image();
+        this.init();
+        this.load_image();
     },
     async init() {
 
       this.contract = new Contract(abi, address, this.provider);
 
       this.loading = true;
-      const dungeon_data = await this.contract.generate_dungeon(this.token_id);
+      let dungeon_data;
+      try {
+         dungeon_data = await this.contract.generate_dungeon(this.token_id);
+      }catch (e) {
+        console.error(e);
+
+        ElMessage({
+          type: 'error',
+          message: 'The map is not minted yet, you could mint one',
+        })
+        this.token_id =1;
+        this.handleChange();
+        return;
+      }
 
       console.log("dungeon_data", dungeon_data);
 
-
       // https://testnet.starkscan.co/contract/0x0019965eaf48c49d298a9a60423a6322c0b17443325a59832d65f0ac716364d2#class-code-history
-
       const name = dungeon_data.dungeon_name;
       const layout = dungeon_data.layout;
       const size = Number(dungeon_data.size);
@@ -1036,7 +1047,7 @@ export default {
         let row = []
         // let grid_row = [];
         for (let x = 0; x < size; x++) {
-          const bit = bits[counter] == 1 ? ' ' : 'X';
+          const bit = bits[counter] == 1 ? '   ' : 'X ';
           row.push(bit)
           // grid_row.push(bits[counter] == 1 ? 0 : 1);
           counter++;
@@ -1054,8 +1065,16 @@ export default {
       this.contract = new Contract(abi, address, this.provider);
 
       this.loading_svg = true;
-      const svg = await this.contract.get_svg(this.token_id);
+      let svg;
+      try {
+         svg = await this.contract.get_svg(this.token_id);
+      }catch (e) {
+        console.error(e);
+        this.token_id =1;
+        return;
+      }
       // console.log("svg",svg);
+
       const svg_str = this.decode_string(svg);
       console.log("svg_str", svg_str)
       this.svg = svg_str;
@@ -1084,7 +1103,13 @@ export default {
       return result;
     },
     async mint() {
-      if (this.wallet_address == "") {
+      if (this.wallet_address === null) {
+
+        ElMessage({
+          message: 'Please connect your wallet first.',
+          type: 'error',
+        })
+
         return;
       }
 
@@ -1095,12 +1120,27 @@ export default {
 
 
       ElMessage({
-        message: 'Congrats, mint is a success.' + txid,
+        message: 'Congrats, mint success.' + txid,
         type: 'success',
       })
 
       const status = await this.provider.waitForTransaction(txid);
       console.log("status", status);
+
+      const new_id = status.events[0].keys[3];
+      console.log("new_id", new_id);
+      if (new_id){
+
+        ElMessage({
+          message: 'Token ID:' + Number(new_id),
+          type: 'success',
+        })
+
+        this.token_id = Number(new_id);
+        this.handleChange();
+
+      }
+
     },
     async connect() {
       const a = await connect({
