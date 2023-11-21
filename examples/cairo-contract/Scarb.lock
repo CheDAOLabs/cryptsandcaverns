@@ -4,7 +4,7 @@ version = 1
 [[package]]
 name = "cc_starknet"
 version = "0.1.1"
-source = "git+https://github.com/CheDAOLabs/cryptsandcaverns.git?tag=v0.1.1-rc0#0ad6a6443106e176ddc1cfd4fa0ff3e0da3b82e1"
+source = "git+https://github.com/CheDAOLabs/cryptsandcaverns.git#edc169348a871a5f38cb7ace4707f1b9b6fe910c"
 dependencies = [
  "openzeppelin",
 ]

@@ -5,4 +5,8 @@ cairo-version = "2.3.1"
 
 [dependencies]
 starknet = ">=2.3.0"
-cc_starknet = { git = "https://github.com/CheDAOLabs/cryptsandcaverns.git", tag = "v0.1.1-rc0" }
+cc_starknet = { git = "https://github.com/CheDAOLabs/cryptsandcaverns.git", ref = "v0.1.1-rc0" }
+
+[[target.starknet-contract]]
+# sierra = true
+casm = true

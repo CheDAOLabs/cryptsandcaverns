@@ -15,7 +15,7 @@ mod Example {
     struct Storage {}
 
     #[external(v0)]
-    fn runrunrun(self: @ContractState, token_id: u256) -> Pack {
+    fn get_points_(self: @ContractState, token_id: u256) -> Pack {
         // you can get the contract address in C&C's README.md
         // this way building ContractAddress just supports literal input
         let dungeon: DungeonDojo = CryptsAndCavernsTraitDispatcher {
