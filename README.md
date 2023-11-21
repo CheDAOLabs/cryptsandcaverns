@@ -1,56 +1,71 @@
-# Crypts and Caverns monorepo
+# Crypts And Caverns
 
-9000 generative on-chain dungeons in the Lootverse. Can be used by designers and developers for text-based, 2D, and 3D games.
+## Description
 
-[CheDao takes over C&C tweets](https://twitter.com/cryptsncaverns/status/1694403804974985383?t=qrRx5pdevMvbMcnUWqqYaw&s=19)
+The rewritten version in the Cairo language has achieved the same effects and features as the solidity version.<br>
+For more infomation, you can check [README](https://github.com/CheDAOLabs/cryptsandcaverns/blob/main/contract/README.md).
 
-## Sub-folders
+## Goerli Address
 
-`/contracts` - Solidity contracts as deployed on-chain
+```shell
+0x056834208d6a7cc06890a80ce523b5776755d68e960273c9ef3659b5f74fa494
+```
 
-`/contracts-starknet` - cairo contracts as deployed on-chain
+# Starknet / Cairo
 
-`/examples` - Example code and proofs of concept for working with the project.
+## Introduction
 
-`/docs` - starknet testnet c&c mint and view
+`Starknet` is a Layer-2 network that makes Ethereum transactions faster, cheaper, and more secure using zk-STARKs technology. Think of it as a boosted layer on top of Ethereum, optimized for speed and cost.
 
-`/website` - threepwave.com website including the Crypts and Caverns website.
+`Cairo` is tailor-made for creating STARK-based smart contracts. As Starknet’s native language, it’s central to building scalable and secure decentralized apps. `Cairo` is a programming language designed for a virtual CPU of the same name.
 
-## Examples
+`Scarb` is the Cairo package manager, its configuration file is `Scarb.toml`.
 
-- [Crypts And Caverns For Starknet testnet](https://chedaolabs.github.io/cryptsandcaverns/#/) - An example webpage for minting C&C NFTs and previewing on the StarkNet testnet (no mint limit on testnet).
+You can check out the [`Starknet Doc`](https://book.starknet.io/title-page.html) and  [`Cairo Book`](https://book.cairo-lang.org/title-page.html) for more information.
 
-- [Crypts And Caverns For unity3D](https://github.com/CheDAOLabs/cryptsandcaverns-game-demo) - An example of integrating C&C NFTs and maps into Unity3D.
+## Installation
 
-- [Crypts And Caverns Dojo Map](https://github.com/CheDAOLabs/cc-dojo-map) - An Example projects of integrating C&C maps developed by the CHE-DAO team with Dojo.
+Cairo can be installed by simply downloading `Scarb`.
 
-## Learn more
+1. Scarb requires a Git executable to be available in the PATH environment variable.
 
-There is a long document about the project on the [Crypts and Caverns website](https://threepwave.com/cryptsandcaverns). Start there and we'll add to this guide as questions come up.
+```shell
+git --version
+```
 
-## Contributors
+2. run the following command in your terminal
 
-I want to build with you. Join the [Crypts and Caverns discord](https://discord.gg/bgEpyGd2) and share your ideas!
+```shell
+curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | sh
+```
 
-Thanks goes to these wonderful people
-([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+3. Verify installation by running the following command in new terminal session, it should print both Scarb and Cairo language versions
 
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/threepwave"><img src="https://avatars.githubusercontent.com/u/86170641?v=4" width="100px;" alt="threepwave "/><br /><sub><b>threepwave  </b></sub></a><br /><a href="https://github.com/CheDAOLabs/cryptsandcaverns/commits?author=threepwave" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/orangeryang"><img src="https://avatars.githubusercontent.com/u/40876894?v=4" width="100px;" alt="Ryan"/><br /><sub><b>Ryan</b></sub></a><br /><a href="https://github.com/FrostStarBook/CC_Adapt/commits?author=orangeryang" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/lesterli"><img src="https://avatars.githubusercontent.com/u/4919882?v=4" width="100px;" alt="lesterli"/><br /><sub><b>lesterli</b></sub></a><br /><a href="https://github.com/FrostStarBook/CC_Adapt/commits?author=lesterli" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/FrostStarBook"><img src="https://avatars.githubusercontent.com/u/28086155?v=4" width="100px;" alt="Frost"/><br /><sub><b>Frost</b></sub></a><br /><a href="https://github.com/FrostStarBook/CC_Adapt/commits?author=FrostStarBook" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/mafty-s"><img src="https://avatars.githubusercontent.com/u/130352932?v=4" width="100px;" alt="Mafty"/><br /><sub><b>Mafty</b></sub></a><br /><a href="https://github.com/mafty-s" title="Code">🤔</a></td>
-    </tr>
-  </tbody>
-</table>
+```shell
+$ scarb --version
 
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
+scarb 2.3.0 (f306f9a91 2023-10-23)
+cairo: 2.3.0 (https://crates.io/crates/cairo-lang-compiler/2.3.0)
+sierra: 1.3.0
+```
 
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+## Build / Compile
+
+`Cairo` contract first compiles to Sierra, an intermediate representation of `Cairo` which will compile later down to a safe subset of CASM. The point of Sierra is to ensure your CASM will always be provable, even when the computation fails.
+
+```shell
+scarb build
+```
+
+## Test
+
+```shell
+scarb test
+```
+
+## Deploy
+
+We use `Starkli` to __declare__ and __deploy__ our `Cairo` contracts. <br>
+you can check out the [`Starkli Book`]([`starli`](https://book.starkli.rs/introduction)) for more information.
+
+_`Remix with Starknet plugin ` is another option._
