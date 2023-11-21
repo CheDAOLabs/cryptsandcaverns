@@ -1,0 +1,8 @@
+[package]
+name = "example"
+version = "0.1.0"
+cairo-version = "2.3.1"
+
+[dependencies]
+starknet = ">=2.3.0"
+cc_starknet = { git = "https://github.com/CheDAOLabs/cryptsandcaverns.git", tag = "v0.1.1-rc0" }

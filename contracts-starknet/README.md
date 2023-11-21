@@ -8,7 +8,7 @@ For more infomation, you can check [README](https://github.com/CheDAOLabs/crypts
 ## Goerli Address
 
 ```shell
-0x078fcf70e22f475b8ffde567f8118e5d99ded383da150e01e55fa79251c7c808
+0x056834208d6a7cc06890a80ce523b5776755d68e960273c9ef3659b5f74fa494
 ```
 
 # Starknet / Cairo

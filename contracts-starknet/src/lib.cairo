@@ -1,6 +1,8 @@
 mod dungeons_generator;
 mod utils;
 
+mod interface;
+
 // --------------------------------------------- interface -------------------------------------------
 
 use starknet::ContractAddress;
@@ -872,7 +874,7 @@ mod Dungeons {
 
     #[external(v0)]
     fn get_size(self: @ContractState, token_id: u256) -> u128 {
-        get_size_in(get_seed(token_id))
+        get_size_in(get_seeds(self,token_id))
     }
 
     fn get_size_in(seed: u256) -> u128 {
@@ -881,7 +883,7 @@ mod Dungeons {
 
     #[external(v0)]
     fn get_environment(self: @ContractState, token_id: u256) -> u8 {
-        get_environment_in(self, get_seed(token_id))
+        get_environment_in(self, get_seeds(self,token_id))
     }
 
     fn get_environment_in(self: @ContractState, seed: u256) -> u8 {
@@ -905,7 +907,7 @@ mod Dungeons {
 
     #[external(v0)]
     fn get_name(self: @ContractState, token_id: u256) -> (Array<felt252>, felt252, u8) {
-        get_name_in(self, get_seed(token_id))
+        get_name_in(self, get_seeds(self,token_id))
     }
 
     fn get_name_in(self: @ContractState, seed: u256) -> (Array<felt252>, felt252, u8) {
