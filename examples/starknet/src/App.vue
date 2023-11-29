@@ -41,7 +41,7 @@
 
 <script>
 import {ElMessage} from 'element-plus'
-import {Contract, constants, Provider, shortString} from "starknet";
+import {Contract,  Provider, shortString} from "starknet";
 import {connect} from "@argent/get-starknet"
 import {useRoute} from 'vue-router';
 
@@ -965,7 +965,8 @@ export default {
     // HelloWorld
   },
   mounted() {
-    this.provider = new Provider({sequencer: {network: constants.NetworkName.SN_GOERLI}});
+    this.provider = new Provider({
+      rpc: {nodeUrl:"https://goerli1-juno.rpc.nethermind.io"}});
     console.log("provider", this.provider);
 
     const route = useRoute();
