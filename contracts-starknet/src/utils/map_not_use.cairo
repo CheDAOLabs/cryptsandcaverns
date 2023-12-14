@@ -26,7 +26,11 @@ impl MapImpl of MapTrait {
         let quotient = position / 256;
         let remainder = position % 256;
 
-        self.update(quotient, (self.select(quotient)) | (1.left_shift(255 - remainder.try_into().unwrap())));
+        self
+            .update(
+                quotient,
+                (self.select(quotient)) | (1.left_shift(255 - remainder.try_into().unwrap()))
+            );
     }
 
     fn get_bit(ref self: Felt252Dict<Nullable<u256>>, position: u256) -> u256 {

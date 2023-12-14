@@ -30,7 +30,6 @@ fn random(seed: u256, min: u128, max: u128) -> u128 {
 
 #[cfg(test)]
 mod test {
-
     use super::random;
 
     #[test]

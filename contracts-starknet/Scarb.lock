@@ -3,12 +3,12 @@ version = 1
 
 [[package]]
 name = "cc_starknet"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "openzeppelin",
 ]
 
 [[package]]
 name = "openzeppelin"
-version = "0.8.0-beta.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.8.0-beta.0#4c95981a7178e43730f152c85a92336dc6a22d62"
+version = "0.8.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts.git?tag=v0.8.0#c23e8e96de60e6e3159b1ff8591a1187269c0eb7"

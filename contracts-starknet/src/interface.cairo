@@ -1,5 +1,5 @@
 use starknet::{ContractAddress, contract_address_const};
-use super::Dungeons::{DungeonSerde, DungeonDojo, EntityDataSerde, Pack};
+use super::Dungeons::{DungeonSerde, DungeonValue, EntityDataSerde, Pack};
 
 #[starknet::interface]
 trait CryptsAndCavernsTrait<TContractState> {
@@ -65,7 +65,7 @@ trait CryptsAndCavernsTrait<TContractState> {
     fn token_URI(self: @TContractState, token_id: u256) -> Array<felt252>;
     fn get_svg(self: @TContractState, token_id: u256) -> Array<felt252>;
     fn generate_dungeon(self: @TContractState, token_id: u256) -> DungeonSerde;
-    fn generate_dungeon_dojo(self: @TContractState, token_id: u256) -> DungeonDojo;
+    fn generate_dungeon_dojo(self: @TContractState, token_id: u256) -> DungeonValue;
     fn get_entities(self: @TContractState, token_id: u256) -> EntityDataSerde;
     fn get_layout(self: @TContractState, seed: u256, size: u128) -> (Pack, u8);
     fn get_size(self: @TContractState, token_id: u256) -> u128;
