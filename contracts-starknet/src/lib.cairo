@@ -49,7 +49,8 @@ mod Dungeons {
     use core::traits::TryInto;
     use starknet::{
         ContractAddress, SyscallResult, info::get_caller_address,
-        storage_access::{Store, StorageAddress, StorageBaseAddress}
+        storage_access::{Store, StorageAddress, StorageBaseAddress},
+        contract_address_try_from_felt252, EthAddress
     };
 
     use super::{
@@ -154,6 +155,7 @@ mod Dungeons {
     enum Event {
         Minted: Minted,
         // Claimed: Claimed,
+        Related: Related,
         #[flat]
         SRC5Event: SRC5Component::Event,
         #[flat]
@@ -173,6 +175,17 @@ mod Dungeons {
     //     account: ContractAddress,
     //     token_id: u128
     // }
+
+    #[derive(Drop, starknet::Event)]
+    struct Related {
+        from_address: felt252,
+        #[key]
+        id: u128,
+        seed: u256,
+        #[key]
+        eth_account: felt252,
+        starknet_account: ContractAddress
+    }
 
     // ------------------------------------------- Storage -------------------------------------------
 
@@ -202,6 +215,9 @@ mod Dungeons {
         // -------------- enumerable -------------
         owned_tokens: LegacyMap::<(ContractAddress, u128), u128>,
         owned_token_index: LegacyMap::<u128, u128>,
+        // -------------- cross ------------------
+        relater: felt252,
+        eth_owner: LegacyMap::<u128, felt252>,
         // -------------- component --------------
         #[substorage(v0)]
         src5: SRC5Component::Storage,
@@ -469,6 +485,30 @@ mod Dungeons {
         fn tokenByIndex(self: @ContractState, index: u256) -> u256 {
             ERC721Enumerable::token_by_index(self, index)
         }
+    }
+
+    // ------ cross chain ------
+
+    #[l1_handler]
+    fn relate(
+        ref self: ContractState,
+        from_address: felt252,
+        id: u128,
+        seed: u256,
+        eth_account: felt252,
+        starknet_account: felt252
+    ) -> felt252 {
+        assert(self.relater.read() == from_address, 'invalid relater');
+
+        let starknet_account: ContractAddress = contract_address_try_from_felt252(starknet_account)
+            .expect('invalid starknet address');
+
+        self.emit(Related { from_address, id, seed, eth_account, starknet_account });
+
+        self.seeds.write(id, seed);
+        self.eth_owner.write(id, eth_account);
+
+        from_address
     }
 
     // ------ ERC721 -------
