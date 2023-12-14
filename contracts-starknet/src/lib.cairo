@@ -50,7 +50,7 @@ mod Dungeons {
     use starknet::{
         ContractAddress, SyscallResult, info::get_caller_address,
         storage_access::{Store, StorageAddress, StorageBaseAddress},
-        contract_address_try_from_felt252, EthAddress
+        contract_address_try_from_felt252, EthAddress, ClassHash
     };
 
     use super::{
@@ -62,10 +62,16 @@ mod Dungeons {
 
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::erc721::ERC721Component;
-    use openzeppelin::token::erc721::erc721::ERC721Component::InternalTrait;
+    use openzeppelin::token::erc721::ERC721Component::InternalTrait as erc721Internal;
+    use openzeppelin::upgrades::UpgradeableComponent;
+    use openzeppelin::upgrades::upgradeable::UpgradeableComponent::InternalTrait as upgradeableInternal;
+    use openzeppelin::access::ownable::OwnableComponent;
+    use openzeppelin::access::ownable::OwnableComponent::InternalTrait as ownableInternal;
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
 
     // ------------------------------------------- Structs -------------------------------------------
 
@@ -159,7 +165,11 @@ mod Dungeons {
         #[flat]
         SRC5Event: SRC5Component::Event,
         #[flat]
-        ERC721Event: ERC721Component::Event
+        ERC721Event: ERC721Component::Event,
+        #[flat]
+        UpgradeableEvent: UpgradeableComponent::Event,
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -222,7 +232,11 @@ mod Dungeons {
         #[substorage(v0)]
         src5: SRC5Component::Storage,
         #[substorage(v0)]
-        erc721: ERC721Component::Storage
+        erc721: ERC721Component::Storage,
+        #[substorage(v0)]
+        upgradeable: UpgradeableComponent::Storage,
+        #[substorage(v0)]
+        ownable: OwnableComponent::Storage,
     }
 
     impl StoreDungeon of Store<Dungeon> {
@@ -386,6 +400,14 @@ mod Dungeons {
                 Option::None(_) => { break offset; }
             };
         }
+    }
+
+    // ------------------------------------------- Upgrade -------------------------------------------
+
+    #[external(v0)]
+    fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+        self.ownable.assert_only_owner();
+        self.upgradeable._upgrade(new_class_hash);
     }
 
     // ------------------------------------------- Dungeon -------------------------------------------
@@ -1264,12 +1286,14 @@ mod Dungeons {
     // ------------------------------------------ Constructor ------------------------------------------
 
     #[constructor]
-    fn constructor(ref self: ContractState) {
+    fn constructor(ref self: ContractState, owner: ContractAddress) {
         self.erc721.initializer('C&C', 'C&C');
 
         self.restricted.write(false);
         self.last_mint.write(9000);
         // self.claimed.write(0);
+
+        self.ownable.initializer(owner);
 
         // --------------- seeder ---------------
         //init PREFIX
