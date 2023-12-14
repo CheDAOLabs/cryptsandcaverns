@@ -155,7 +155,6 @@ mod Dungeons {
 
     // ------------------------------------------- Event -------------------------------------------
 
-    // openzeppelin internal function event emitting does not work
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
