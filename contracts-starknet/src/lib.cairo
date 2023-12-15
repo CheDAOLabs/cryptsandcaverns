@@ -63,15 +63,15 @@ mod Dungeons {
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::erc721::ERC721Component;
     use openzeppelin::token::erc721::ERC721Component::InternalTrait as erc721Internal;
-    use openzeppelin::upgrades::UpgradeableComponent;
-    use openzeppelin::upgrades::upgradeable::UpgradeableComponent::InternalTrait as upgradeableInternal;
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::access::ownable::OwnableComponent::InternalTrait as ownableInternal;
+    use components::upgradeable::upgradeable::UpgradeableComponent;
+    use components::upgradeable::upgradeable::UpgradeableComponent::InternalTrait as upgradeableInternal;
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
-    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
 
     // ------------------------------------------- Structs -------------------------------------------
 
@@ -166,9 +166,9 @@ mod Dungeons {
         #[flat]
         ERC721Event: ERC721Component::Event,
         #[flat]
-        UpgradeableEvent: UpgradeableComponent::Event,
-        #[flat]
         OwnableEvent: OwnableComponent::Event,
+        #[flat]
+        UpgradeableEvent: UpgradeableComponent::Event,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -233,9 +233,9 @@ mod Dungeons {
         #[substorage(v0)]
         erc721: ERC721Component::Storage,
         #[substorage(v0)]
-        upgradeable: UpgradeableComponent::Storage,
-        #[substorage(v0)]
         ownable: OwnableComponent::Storage,
+        #[substorage(v0)]
+        upgradeable: UpgradeableComponent::Storage,
     }
 
     impl StoreDungeon of Store<Dungeon> {
@@ -419,7 +419,7 @@ mod Dungeons {
 
     #[external(v0)]
     fn test_get_layout(self: @ContractState, seed: u256) -> (Pack, u8) {
-        get_layout(self, seed, get_size_in(seed))
+        get_layout_in(self, seed, get_size_in(seed))
     }
 
     #[external(v0)]
@@ -437,7 +437,7 @@ mod Dungeons {
         let size = get_size_in(seed);
 
         let (x_array, y_array, t_array) = generator::get_entities(seed, size);
-        let (mut layout, structure) = get_layout(self, seed, size);
+        let (mut layout, structure) = get_layout_in(self, seed, size);
         let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
 
         DungeonSerde {
@@ -639,7 +639,6 @@ mod Dungeons {
         }
 
         fn token_uri(self: @ContractState, token_id: u256) -> felt252 {
-            // token_URI(self, token_id)
             self.erc721.token_uri(token_id)
         }
     }
@@ -706,7 +705,6 @@ mod Dungeons {
     #[external(v0)]
     fn get_seeds(self: @ContractState, token_id: u256) -> u256 {
         is_valid(self, token_id);
-
         self.seeds.read(token_id.try_into().unwrap())
     }
 
@@ -751,13 +749,13 @@ mod Dungeons {
     }
 
     #[external(v0)]
-    fn generate_dungeon_dojo(self: @ContractState, token_id: u256) -> DungeonValue {
+    fn generate_dungeon_value(self: @ContractState, token_id: u256) -> DungeonValue {
         is_valid(self, token_id);
 
         let seed: u256 = self.seeds.read(token_id.try_into().unwrap());
         let size = get_size_in(seed);
 
-        let dungeon = generate_dungeon_in_dojo(self, seed, size);
+        let dungeon = generate_dungeon_value_in(self, seed, size);
 
         DungeonValue {
             size: dungeon.size,
@@ -791,9 +789,9 @@ mod Dungeons {
         }
     }
 
-    fn generate_dungeon_in_dojo(self: @ContractState, seed: u256, size: u128) -> DungeonValue {
+    fn generate_dungeon_value_in(self: @ContractState, seed: u256, size: u128) -> DungeonValue {
         let (points, doors) = generator::generate_entities(seed, size);
-        let (mut layout, structure) = get_layout(self, seed, size);
+        let (mut layout, structure) = get_layout_in(self, seed, size);
         let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
 
         DungeonValue {
@@ -813,7 +811,7 @@ mod Dungeons {
 
     fn generate_dungeon_in(self: @ContractState, seed: u256, size: u128) -> Dungeon {
         let (x_array, y_array, t_array) = generator::get_entities(seed, size);
-        let (mut layout, structure) = get_layout(self, seed, size);
+        let (mut layout, structure) = get_layout_in(self, seed, size);
         let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
 
         Dungeon {
@@ -830,27 +828,26 @@ mod Dungeons {
 
     #[external(v0)]
     fn get_entities(self: @ContractState, token_id: u256) -> EntityDataSerde {
-        // 'get_entities'.print();
-        // is_valid(self, token_id);
-
+        is_valid(self, token_id);
         let seed = self.seeds.read(token_id.try_into().unwrap());
         let (x_array, y_array, t_array) = generator::get_entities(seed, get_size_in(seed));
 
         EntityDataSerde { x: x_array.span(), y: y_array.span(), entity_data: t_array.span() }
     }
 
-    #[external(v0)]
-    fn get_layout(self: @ContractState, seed: u256, size: u128) -> (Pack, u8) {
-        // 'get_layout'.print();
-        // is_valid(self, token_id);
-
+    fn get_layout_in(self: @ContractState, seed: u256, size: u128) -> (Pack, u8) {
         generator::get_layout(seed, size)
     }
 
+    #[external(v0)]
+    fn get_layout(self: @ContractState, token_id: u256) -> (Pack, u8) {
+        is_valid(self, token_id);
+        let seed: u256 = get_seeds(self, token_id);
+        get_layout_in(self, seed, get_size_in(seed))
+    }
+
     fn is_valid(self: @ContractState, token_id: u256) {
-        if token_id > 9000 {
-            assert(self.erc721._exists(token_id), 'Valid token');
-        }
+        assert(self.erc721._exists(token_id), 'Valid token');
     }
 
     // --------------------------------------------- Seeder --------------------------------------------
@@ -1025,7 +1022,6 @@ mod Dungeons {
         parts
     }
 
-    // use generator::p;
     fn chunk_dungeon(
         self: @ContractState, dungeon: DungeonSerde, ref helper: RenderHelper
     ) -> Array<felt252> {

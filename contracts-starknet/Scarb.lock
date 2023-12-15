@@ -5,8 +5,14 @@ version = 1
 name = "cc_starknet"
 version = "0.1.2"
 dependencies = [
+ "components",
  "openzeppelin",
 ]
+
+[[package]]
+name = "components"
+version = "0.1.0"
+source = "git+https://github.com/orangeryang/cairo-component.git#a1512653fd3e942297ecce5587e87168499ecbb3"
 
 [[package]]
 name = "openzeppelin"
