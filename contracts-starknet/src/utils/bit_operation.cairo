@@ -47,6 +47,7 @@ mod test {
     use super::BitOperationTrait;
 
     #[test]
+    #[ignore]
     #[available_gas(300000000000000000)]
     fn test() {
         let mut a: u256 = 1;

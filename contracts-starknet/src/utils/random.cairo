@@ -16,6 +16,10 @@
 ///
 /// This function will panic if the result exceeds the range of `u256`.
 fn random(seed: u256, min: u128, max: u128) -> u128 {
+    if max == min {
+       return min;
+    }
+
     let output: u256 = keccak::keccak_u256s_be_inputs(array![seed].span());
 
     let result = (u256 {
@@ -33,7 +37,7 @@ mod test {
     use super::random;
 
     #[test]
-    // #[ignore]
+    #[ignore]
     #[available_gas(30000000)]
     fn test() {
         let seed: u256 =

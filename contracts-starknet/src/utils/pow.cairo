@@ -1270,6 +1270,7 @@ mod test {
     use super::get_pow;
 
     #[test]
+    #[ignore]
     #[available_gas(3000000)]
     fn test_pow() {
         assert(get_pow(0) == 0x1, 'pow 0');

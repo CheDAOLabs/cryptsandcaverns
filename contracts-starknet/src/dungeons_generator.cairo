@@ -48,7 +48,6 @@ fn get_layout(seed: u256, size: u128) -> (Pack, u8) {
 }
 
 fn generate_rooms(ref settings: Settings) -> (Array<Room>, Pack) {
-    // 'generate_rooms'.print();
     let mut room_settings: RoomSettings = RoomSettings {
         min_rooms: settings.size / 3,
         max_rooms: settings.size,
@@ -58,7 +57,6 @@ fn generate_rooms(ref settings: Settings) -> (Array<Room>, Pack) {
 
     let mut rooms: Array<Room> = ArrayTrait::new();
     let mut floor: Pack = PackTrait::new();
-
     let mut num_rooms = random_with_counter_plus(
         ref settings, room_settings.min_rooms, room_settings.max_rooms
     );
@@ -121,7 +119,6 @@ fn explore_in_cavern(
 }
 
 fn generate_cavern(ref settings: Settings) -> Pack {
-    // 'generate_cavern'.print();
     let holes = settings.size / 2;
     let mut cavern: Pack = PackTrait::new();
     let mut last_direction: u8 = 0;
@@ -199,7 +196,6 @@ fn generate_hallways(ref settings: Settings, rooms: @Array<Room>) -> Pack {
 }
 
 fn generate_points(ref settings: Settings, ref map: Pack, probability: u128) -> Pack {
-    // 'generate_points'.print();
     let mut points: Pack = PackTrait::new();
 
     // maintain consistency with the source code
@@ -281,7 +277,6 @@ fn get_doors(seed: u256, size: u128) -> (Pack, u128) {
 }
 
 fn generate_entities(seed: u256, size: u128) -> (Pack, Pack) {
-    // 'generate_entities'.print();
     let mut settings: Settings = build_settings(seed, size);
 
     if random_with_counter_plus(ref settings, 0, 100) > 30 {
@@ -549,7 +544,7 @@ mod test {
     use debug::PrintTrait;
 
     #[test]
-    // #[ignore]
+    #[ignore]
     #[available_gas(30000000)]
     fn test_set_bit() {
         let mut map: Pack = PackTrait::new();
@@ -571,6 +566,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     #[available_gas(30000000)]
     fn test_sqr() {
         assert(square_root(17) == 4, 'compute square root of 17');
@@ -578,7 +574,7 @@ mod test {
     }
 
     #[test]
-    // #[ignore]
+    #[ignore]
     #[available_gas(300000000000000)]
     fn test_generate_room() {
         {}

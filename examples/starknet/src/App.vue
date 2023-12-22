@@ -957,7 +957,7 @@ const abi = [
     ]
   }
 ];
-const address = "0x04861b2e524f5d5eeb57cf5feda0ce9fed089afc6bd369d1df276ef9e04f7a95";
+const address = "0x000ec1131fe035c235c03e0ad43646d8cbfd59d048b1825b0a36a167c468d5bf";
 
 export default {
   name: 'App',
@@ -966,7 +966,7 @@ export default {
   },
   mounted() {
     this.provider = new Provider({
-      rpc: {nodeUrl:"https://goerli1-juno.rpc.nethermind.io"}});
+      rpc: {nodeUrl:"https://rpc-sepolia.staging.nethermind.dev"}});
     console.log("provider", this.provider);
 
     const route = useRoute();

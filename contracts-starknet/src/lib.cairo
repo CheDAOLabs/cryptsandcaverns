@@ -780,7 +780,7 @@ mod Dungeons {
 
         fn get_layout(self: @ContractState, token_id: u256) -> (Pack, u8) {
             let seed: u256 = get_seed_in(self, token_id);
-            get_layout_in(self, seed, get_size_in(seed))
+            get_layout_in(seed, get_size_in(seed))
         }
 
         fn get_name(self: @ContractState, token_id: u256) -> (Array<felt252>, felt252, u8) {
@@ -788,7 +788,7 @@ mod Dungeons {
         }
 
         fn get_environment(self: @ContractState, token_id: u256) -> u8 {
-            get_environment_in(self, get_seed_in(self, token_id))
+            get_environment_in(get_seed_in(self, token_id))
         }
     }
 
@@ -864,12 +864,12 @@ mod Dungeons {
 
     fn generate_dungeon_value_in(self: @ContractState, seed: u256, size: u128) -> DungeonValue {
         let (points, doors) = generator::generate_entities(seed, size);
-        let (mut layout, structure) = get_layout_in(self, seed, size);
+        let (mut layout, structure) = get_layout_in(seed, size);
         let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
 
         DungeonValue {
             size: size.try_into().unwrap(),
-            environment: get_environment_in(self, seed),
+            environment: get_environment_in(seed),
             structure: structure,
             legendary: legendary,
             layout: layout,
@@ -884,12 +884,12 @@ mod Dungeons {
 
     fn generate_dungeon_in(self: @ContractState, seed: u256, size: u128) -> Dungeon {
         let (x_array, y_array, t_array) = generator::get_entities(seed, size);
-        let (mut layout, structure) = get_layout_in(self, seed, size);
+        let (mut layout, structure) = get_layout_in(seed, size);
         let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
 
         Dungeon {
             size: size.try_into().unwrap(),
-            environment: get_environment_in(self, seed),
+            environment: get_environment_in(seed),
             structure: structure,
             legendary: legendary,
             layout: layout,
@@ -900,7 +900,7 @@ mod Dungeons {
     }
 
 
-    fn get_layout_in(self: @ContractState, seed: u256, size: u128) -> (Pack, u8) {
+    fn get_layout_in(seed: u256, size: u128) -> (Pack, u8) {
         generator::get_layout(seed, size)
     }
 
@@ -928,7 +928,7 @@ mod Dungeons {
     }
 
 
-    fn get_environment_in(self: @ContractState, seed: u256) -> u8 {
+    fn get_environment_in(seed: u256) -> u8 {
         let rand = random(seed.left_shift(8), 0, 100);
 
         if rand >= 70 {
