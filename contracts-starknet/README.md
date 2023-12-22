@@ -5,10 +5,10 @@
 The rewritten version in the Cairo language has achieved the same effects and features as the solidity version.<br>
 For more infomation, you can check [README](https://github.com/CheDAOLabs/cryptsandcaverns/blob/main/contract/README.md).
 
-## Goerli Address
+## Sepolia Address
 
 ```shell
-0x04861b2e524f5d5eeb57cf5feda0ce9fed089afc6bd369d1df276ef9e04f7a95
+0x03616e040fb3306da970c0ef0d401cc0fd2177b9f32f82097574b1f62f190f49
 ```
 
 # Starknet / Cairo
@@ -44,9 +44,9 @@ curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh
 ```shell
 $ scarb --version
 
-scarb 2.3.0 (f306f9a91 2023-10-23)
-cairo: 2.3.0 (https://crates.io/crates/cairo-lang-compiler/2.3.0)
-sierra: 1.3.0
+scarb 2.4.0 (cba988e68 2023-12-06)
+cairo: 2.4.0 (https://crates.io/crates/cairo-lang-compiler/2.4.0)
+sierra: 1.4.0
 ```
 
 ## Build / Compile

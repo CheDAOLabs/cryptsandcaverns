@@ -730,7 +730,7 @@ mod Dungeons {
             // if dungeon.layout.first == 0
             //     && dungeon.layout.second == 0
             //     && dungeon.layout.third == 0 {
-                let dungeon = generate_dungeon_in(self, seed, get_size_in(seed));
+            let dungeon = generate_dungeon_in(self, seed, get_size_in(seed));
             // }
 
             DungeonSerde {
@@ -798,35 +798,40 @@ mod Dungeons {
             if id < 2000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        0x07f5ecd04e32c162638650d89afb9b7b1bd9627f6cd613de5a6badd9277c138c
+                        // 0x07f5ecd04e32c162638650d89afb9b7b1bd9627f6cd613de5a6badd9277c138c
+                        0x075ea500c4a2834406d979114a4c1be6fa0970869225b25de1672ecbb6d891ea
                     >()
                 }
                     .get_seed(id)
             } else if id < 4000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        0x05fe55b0b2e1d9d4224f830451c62a1a421d9e8cd1159965c4686ab1a353b111
+                        // 0x05fe55b0b2e1d9d4224f830451c62a1a421d9e8cd1159965c4686ab1a353b111
+                        0x06f424fac78d406bd85368ee3fbcf7fd841a01a27466cfd025fa678050077e7f
                     >()
                 }
                     .get_seed(id)
             } else if id < 6000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        0x03a99da7854387dfa199b4cd7f2c218b0e81958d64155126ffb4fac925801df2
+                        // 0x03a99da7854387dfa199b4cd7f2c218b0e81958d64155126ffb4fac925801df2
+                        0x01587c6e9e11ff05105ee6589d75e365f8970867f381098edf36bc3c4a948198
                     >()
                 }
                     .get_seed(id)
             } else if id < 8000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        0x06db0e11d4ef2525447f1ce8f08a50712c19347bb5533a56d547b5bb41bd65b3
+                        // 0x06db0e11d4ef2525447f1ce8f08a50712c19347bb5533a56d547b5bb41bd65b3
+                        0x06847a741fd3a804d84dc41a3a5bfb6d4ffe4e1c620e2d71b80ee40157faeda1
                     >()
                 }
                     .get_seed(id)
             } else {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        0x00fd4ccfcbf1f46dff702adeb07474bd055add7d0e6697c6f8793dfa3b27c8d6
+                        // 0x00fd4ccfcbf1f46dff702adeb07474bd055add7d0e6697c6f8793dfa3b27c8d6
+                        0x03facb2063078c16833d0649bf4d9f7079bb5dc7fdc7d19337b5cb5fdc76c637
                     >()
                 }
                     .get_seed(id)
