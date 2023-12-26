@@ -422,6 +422,31 @@ mod Dungeons {
     //     draw(self, test_generate_dungeon(self, seed))
     // }
 
+    // use debug::PrintTrait;
+
+    // #[test]
+    // fn ttttt(self: @ContractState) {
+    //     // let r = test_generate_dungeon(
+    //     //     self, 0x30b9924e5472b140af5bcd1c6b815e6eafad6c4ab07ddd547d1160d11e8fed
+    //     // );
+
+    //     let arr: Array<felt252> = test_get_svg(
+    //         self, 0xc604b7455f0fd6fd86ded01a01d5fe9f777b30d1b1849040198bb3eafa5a5539
+    //     );
+    //     arr.len().print();
+
+    //     let mut i = 0;
+    //     loop {
+    //         if i == arr.len() {
+    //             break;
+    //         }
+    //         let a: felt252 = *arr.at(i);
+    //         a.print();
+
+    //         i += 1;
+    //     }
+    // }
+
     // #[external(v0)]
     // fn test_get_layout(self: @ContractState, seed: u256) -> (Pack, u8) {
     //     get_layout_in(self, seed, get_size_in(seed))
@@ -442,12 +467,12 @@ mod Dungeons {
     //     let size = get_size_in(seed);
 
     //     let (x_array, y_array, t_array) = generator::get_entities(seed, size);
-    //     let (mut layout, structure) = get_layout_in(self, seed, size);
+    //     let (mut layout, structure) = get_layout_in(seed, size);
     //     let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
 
     //     DungeonSerde {
     //         size: size.try_into().unwrap(),
-    //         environment: get_environment_in(self, seed),
+    //         environment: get_environment_in(seed),
     //         structure: structure,
     //         legendary: legendary,
     //         layout: layout,
@@ -586,6 +611,9 @@ mod Dungeons {
     #[external(v0)]
     impl ERC721Impl of IERC721<ContractState> {
         fn owner_of(self: @ContractState, token_id: u256) -> ContractAddress {
+            if token_id <= 9000 {
+                return contract_address_const::<0>();
+            }
             self.erc721.owner_of(token_id)
         }
 
