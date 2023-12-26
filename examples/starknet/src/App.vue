@@ -7,7 +7,8 @@
           <span style="font-size: 30px">C&C Example</span>
           <el-button class="button" plain type="primary" @click="connect">
             {{
-              wallet_address == null ? "Connect Wallet" : wallet_address.toString().substr(0, 10) + "..." + wallet_address.toString().substr(wallet_address.length - 4, 4)
+              wallet_address == null ? "Connect Wallet" : wallet_address.toString().substr(0, 10) + "..." +
+            wallet_address.toString().substr(wallet_address.length - 4, 4)
             }}
           </el-button>
         </div>
@@ -19,12 +20,12 @@
       <!--      <br/>-->
       <!--      <br/>-->
       <!--    <img alt="Vue logo" src="./assets/logo.png">-->
-      <el-input-number v-model="token_id" :min="1" :max="1000000" @change="handleChange"/>
+      <el-input-number v-model="token_id" :min="1" :max="1000000" @change="handleChange" />
 
       <div style="color: white;font-size: 24px;font-family: VT323;margin-top: 10px"> {{ name }}</div>
       <div class="container"
-           style="  overflow: hidden;margin-top: 10px;background-color: black;color:white;border: 1px;border-color:white;display: flex;align-items: center;    justify-content: center;"
-           v-loading="loading">
+        style="  overflow: hidden;margin-top: 10px;background-color: black;color:white;border: 1px;border-color:white;display: flex;align-items: center;    justify-content: center;"
+        v-loading="loading">
         <pre style="color: white">{{ dungeon_string }}</pre>
       </div>
       <div class="container" style="background-color: red;margin-top: 10px" v-loading="loading_svg">
@@ -40,10 +41,10 @@
 </template>
 
 <script>
-import {ElMessage} from 'element-plus'
-import {Contract,  Provider, shortString} from "starknet";
-import {connect} from "@argent/get-starknet"
-import {useRoute} from 'vue-router';
+import { ElMessage } from 'element-plus'
+import { Contract, Provider, shortString } from "starknet";
+import { connect } from "@argent/get-starknet"
+import { useRoute } from 'vue-router';
 
 const abi = [
   {
@@ -966,7 +967,8 @@ export default {
   },
   mounted() {
     this.provider = new Provider({
-      rpc: {nodeUrl:"https://rpc-sepolia.staging.nethermind.dev"}});
+      rpc: { nodeUrl: "https://rpc-sepolia.staging.nethermind.dev" }
+    });
     console.log("provider", this.provider);
 
     const route = useRoute();
@@ -996,8 +998,8 @@ export default {
   },
   methods: {
     handleChange() {
-        this.init();
-        this.load_image();
+      this.init();
+      this.load_image();
     },
     async init() {
 
@@ -1006,15 +1008,15 @@ export default {
       this.loading = true;
       let dungeon_data;
       try {
-         dungeon_data = await this.contract.generate_dungeon(this.token_id);
-      }catch (e) {
+        dungeon_data = await this.contract.generate_dungeon(this.token_id);
+      } catch (e) {
         console.error(e);
 
         ElMessage({
           type: 'error',
           message: 'The map is not minted yet, you could mint one',
         })
-        this.token_id =1;
+        this.token_id = 1;
         this.handleChange();
         return;
       }
@@ -1035,9 +1037,9 @@ export default {
       // eslint-disable-next-line
       let layoutIntFirst = BigInt(layout.first).toString(2).padStart(248, '0');
       // eslint-disable-next-line
-      let layoutIntSecond = BigInt(layout.second).toString(2);
+      let layoutIntSecond = BigInt(layout.second).toString(2).padStart(248, '0');
       // eslint-disable-next-line
-      let layoutIntThird = BigInt(layout.third).toString(2);
+      let layoutIntThird = BigInt(layout.third).toString(2).padStart(248, '0');
       let bits = layoutIntFirst + layoutIntSecond + layoutIntThird;
 
       // Store dungeon in 2D array
@@ -1048,7 +1050,7 @@ export default {
         let row = []
         // let grid_row = [];
         for (let x = 0; x < size; x++) {
-          const bit = bits[counter] == 1 ? '   ' : 'X ';
+          const bit = bits[counter] == 1 ? this.entity(x, y, entities.x, entities.y, entities.entity_data) : 'X';
           row.push(bit)
           // grid_row.push(bits[counter] == 1 ? 0 : 1);
           counter++;
@@ -1062,16 +1064,25 @@ export default {
       console.log(this.dungeon_string)
       this.loading = false;
     },
+    entity(x, y, ox, oy, entity_data) {
+      for (let i = 0; i < entity_data.length; i++) {
+        if (ox[i] == x && oy[i] == y) {
+          console.log("x:", x, "y:", y, "i:", i, "entity_data[i]:", entity_data[i]);
+          return entity_data[i] == 0 ? '-' : 'O';
+        }
+      }
+      return ' '
+    },
     async load_image() {
       this.contract = new Contract(abi, address, this.provider);
 
       this.loading_svg = true;
       let svg;
       try {
-         svg = await this.contract.get_svg(this.token_id);
-      }catch (e) {
+        svg = await this.contract.get_svg(this.token_id);
+      } catch (e) {
         console.error(e);
-        this.token_id =1;
+        this.token_id = 1;
         return;
       }
       // console.log("svg",svg);
@@ -1130,7 +1141,7 @@ export default {
 
       const new_id = status.events[0].keys[3];
       console.log("new_id", new_id);
-      if (new_id){
+      if (new_id) {
 
         ElMessage({
           message: 'Token ID:' + Number(new_id),
@@ -1145,9 +1156,9 @@ export default {
     },
     async connect() {
       const a = await connect({
-        modalMode:"alwaysAsk",
-        modalTheme:"dark",
-        chainId:"SN_GOERLI"
+        modalMode: "alwaysAsk",
+        modalTheme: "dark",
+        chainId: "SN_GOERLI"
       });
       console.log(a.account);
       this.wallet_address = a.account.address;
@@ -1161,7 +1172,6 @@ export default {
 
 
 <style>
-
 body {
   background-color: black;
   margin: 0;
@@ -1198,5 +1208,4 @@ body {
   justify-content: space-between;
   align-items: center;
 }
-
 </style>
