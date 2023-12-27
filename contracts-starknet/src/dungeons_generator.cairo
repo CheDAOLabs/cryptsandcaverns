@@ -32,16 +32,16 @@ struct Room {
 
 fn get_layout(seed: u256, size: u128) -> (Pack, u8) {
     let mut settings: Settings = build_settings(seed, size);
-    let mut structure: u8 = 0;
 
     if random_shift_counter_plus(ref settings, 0, 100) > 30 {
+        let structure: u8 = 0;
         let (mut rooms, mut floor) = generate_rooms(ref settings);
         let mut hallways = generate_hallways(ref settings, @rooms);
 
         floor.add_bit(hallways);
         (floor, structure)
     } else {
-        structure = 1;
+        let structure = 1;
         let cavern: Pack = generate_cavern(ref settings);
         (cavern, structure)
     }
