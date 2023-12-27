@@ -823,7 +823,7 @@ mod Dungeons {
     fn get_seed_in(self: @ContractState, token_id: u256) -> u256 {
         if token_id <= 9000 {
             let id: u128 = token_id.try_into().unwrap();
-            if id < 2000 {
+            let seed = if id < 2000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
                         // 0x07f5ecd04e32c162638650d89afb9b7b1bd9627f6cd613de5a6badd9277c138c
@@ -863,7 +863,10 @@ mod Dungeons {
                     >()
                 }
                     .get_seed(id)
-            }
+            };
+
+            assert(seed != 0, 'invalid token id');
+            seed
         } else {
             is_valid(self, token_id);
             self.seeds.read(token_id.try_into().unwrap())
