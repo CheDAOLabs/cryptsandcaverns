@@ -60,7 +60,7 @@ mod Dungeons {
 
     use super::{
         utils::{random::random, bit_operation::BitOperationTrait, pack::{PackTrait, Pack}},
-        dungeons_generator as generator
+        dungeons_generator::{generate_layout_and_entities, parse_entities}
     };
 
     // ------------------------------------------ Components -----------------------------------------
@@ -81,7 +81,7 @@ mod Dungeons {
     // ------------------------------------------- Structs -------------------------------------------
 
     #[derive(Copy, Drop, Serde)]
-    struct DungeonValue {
+    struct Dungeon {
         size: u8,
         environment: u8,
         structure: u8,
@@ -90,54 +90,7 @@ mod Dungeons {
         doors: Pack,
         points: Pack,
         affinity: felt252,
-        dungeon_name: Name
-    }
-
-    #[derive(Copy, Drop, Serde)]
-    struct Name {
-        first: felt252,
-        second: felt252,
-        third: felt252,
-        fourth: felt252,
-        fifth: felt252
-    }
-
-    #[derive(Copy, Drop, Serde)]
-    struct DungeonSerde {
-        size: u8,
-        environment: u8,
-        structure: u8,
-        legendary: u8,
-        layout: Pack,
-        entities: EntityDataSerde,
-        affinity: felt252,
-        dungeon_name: Span<felt252>
-    }
-
-    #[derive(Drop)]
-    struct Dungeon {
-        size: u8,
-        environment: u8,
-        structure: u8,
-        legendary: u8,
-        layout: Pack,
-        entities: EntityData,
-        affinity: felt252,
-        dungeon_name: Array<felt252>
-    }
-
-    #[derive(Drop)]
-    struct EntityData {
-        x: Array<u8>,
-        y: Array<u8>,
-        entity_data: Array<u8>
-    }
-
-    #[derive(Copy, Drop, Serde)]
-    struct EntityDataSerde {
-        x: Span<u8>,
-        y: Span<u8>,
-        entity_data: Span<u8>
+        dungeon_name: Span<felt252>,
     }
 
     /// Helper variables when iterating through and drawing dungeon tiles
@@ -152,19 +105,12 @@ mod Dungeons {
         last_start: u128,
     }
 
-    #[derive(Copy, Drop)]
-    struct EntityHelper {
-        size: u256,
-        environment: u256,
-    }
-
     // ------------------------------------------- Event -------------------------------------------
 
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
         Minted: Minted,
-        // Claimed: Claimed,
         Related: Related,
         #[flat]
         SRC5Event: SRC5Component::Event,
@@ -183,13 +129,6 @@ mod Dungeons {
         token_id: u256
     }
 
-    // #[derive(Drop, starknet::Event)]
-    // struct Claimed {
-    //     #[key]
-    //     account: ContractAddress,
-    //     token_id: u128
-    // }
-
     #[derive(Drop, starknet::Event)]
     struct Related {
         from_address: felt252,
@@ -206,7 +145,7 @@ mod Dungeons {
     #[storage]
     struct Storage {
         // -------------- dungeons ----------------
-        dungeons: LegacyMap::<u128, Dungeon>,
+        // dungeons: LegacyMap::<u128, Dungeon>,
         // price: u256,
         // loot:ContractAddress,
         seeds: LegacyMap::<u128, u256>,
@@ -243,169 +182,6 @@ mod Dungeons {
         upgradeable: UpgradeableComponent::Storage,
     }
 
-    impl StoreDungeon of Store<Dungeon> {
-        fn read(address_domain: u32, base: StorageBaseAddress) -> SyscallResult<Dungeon> {
-            StoreDungeon::read_at_offset(address_domain, base, 0)
-        }
-
-        fn write(
-            address_domain: u32, base: StorageBaseAddress, value: Dungeon
-        ) -> SyscallResult<()> {
-            StoreDungeon::write_at_offset(address_domain, base, 0, value)
-        }
-
-        fn read_at_offset(
-            address_domain: u32, base: StorageBaseAddress, mut offset: u8
-        ) -> SyscallResult<Dungeon> {
-            let size = Store::<u8>::read_at_offset(address_domain, base, offset).unwrap();
-            offset += 1;
-
-            let environment = Store::<u8>::read_at_offset(address_domain, base, offset).unwrap();
-            offset += 1;
-
-            let structure = Store::<u8>::read_at_offset(address_domain, base, offset).unwrap();
-            offset += 1;
-
-            let legendary = Store::<u8>::read_at_offset(address_domain, base, offset).unwrap();
-            offset += 1;
-
-            let first = Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap();
-            offset += 1;
-            let second = Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap();
-            offset += 1;
-            let third = Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap();
-            offset += 1;
-
-            let (x, mut offset) = read_array(address_domain, base, offset);
-            let (y, mut offset) = read_array(address_domain, base, offset);
-            let (entity_data, mut offset) = read_array(address_domain, base, offset);
-
-            let affinity = Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap();
-            offset += 1;
-
-            let mut len: u8 = Store::<u8>::read_at_offset(address_domain, base, offset)
-                .expect('span too long');
-            offset += 1;
-            let mut dungeon_name: Array<felt252> = ArrayTrait::new();
-            loop {
-                if len == 0 {
-                    break;
-                }
-                dungeon_name
-                    .append(
-                        Store::<felt252>::read_at_offset(address_domain, base, offset).unwrap()
-                    );
-                offset += 1;
-                len -= 1;
-            };
-
-            return Result::Ok(
-                Dungeon {
-                    size: size,
-                    environment: environment,
-                    structure: structure,
-                    legendary: legendary,
-                    layout: Pack { first: first, second: second, third: third },
-                    entities: EntityData { x: x, y: y, entity_data: entity_data },
-                    affinity: affinity,
-                    dungeon_name: dungeon_name
-                }
-            );
-        }
-
-        fn write_at_offset(
-            address_domain: u32, base: StorageBaseAddress, mut offset: u8, value: Dungeon
-        ) -> SyscallResult<()> {
-            Store::<u8>::write_at_offset(address_domain, base, offset, value.size);
-            offset += 1;
-
-            Store::<u8>::write_at_offset(address_domain, base, offset, value.environment);
-            offset += 1;
-
-            Store::<u8>::write_at_offset(address_domain, base, offset, value.structure);
-            offset += 1;
-
-            Store::<u8>::write_at_offset(address_domain, base, offset, value.legendary);
-            offset += 1;
-
-            Store::<felt252>::write_at_offset(address_domain, base, offset, value.layout.first);
-            offset += 1;
-            Store::<felt252>::write_at_offset(address_domain, base, offset, value.layout.second);
-            offset += 1;
-            Store::<felt252>::write_at_offset(address_domain, base, offset, value.layout.third);
-            offset += 1;
-
-            offset = write_array(address_domain, base, value.entities.x.span(), offset);
-            offset = write_array(address_domain, base, value.entities.y.span(), offset);
-            offset = write_array(address_domain, base, value.entities.entity_data.span(), offset);
-
-            Store::<felt252>::write_at_offset(address_domain, base, offset, value.affinity);
-            offset += 1;
-
-            let mut span = value.dungeon_name.span();
-            Store::<
-                u8
-            >::write_at_offset(
-                address_domain, base, offset, span.len().try_into().expect('span too long')
-            );
-            offset += 1;
-            loop {
-                match span.pop_front() {
-                    Option::Some(element) => {
-                        Store::<felt252>::write_at_offset(address_domain, base, offset, *element);
-                        offset += 1;
-                    },
-                    Option::None(_) => { break Result::Ok(()); }
-                };
-            }
-        }
-
-        fn size() -> u8 {
-            252
-        }
-    }
-
-    fn read_array(
-        address_domain: u32, base: StorageBaseAddress, mut offset: u8
-    ) -> (Array<u8>, u8) {
-        let mut len: u8 = Store::<u8>::read_at_offset(address_domain, base, offset)
-            .expect('span too long');
-        offset += 1;
-
-        let mut result: Array<u8> = ArrayTrait::new();
-        loop {
-            if len == 0 {
-                break;
-            }
-            result.append(Store::<u8>::read_at_offset(address_domain, base, offset).unwrap());
-            offset += 1;
-            len -= 1;
-        };
-
-        (result, offset)
-    }
-
-    fn write_array(
-        address_domain: u32, base: StorageBaseAddress, mut span: Span<u8>, mut offset: u8
-    ) -> u8 {
-        Store::<
-            u8
-        >::write_at_offset(
-            address_domain, base, offset, span.len().try_into().expect('span too long')
-        );
-        offset += 1;
-
-        loop {
-            match span.pop_front() {
-                Option::Some(element) => {
-                    Store::<u8>::write_at_offset(address_domain, base, offset, *element);
-                    offset += 1;
-                },
-                Option::None(_) => { break offset; }
-            };
-        }
-    }
-
     // ------------------------------------------- Upgrade -------------------------------------------
 
     #[external(v0)]
@@ -415,93 +191,6 @@ mod Dungeons {
     }
 
     // ------------------------------------------- Dungeon -------------------------------------------
-
-    // ------ Test -------
-    // #[external(v0)]
-    // fn test_get_svg(self: @ContractState, seed: u256) -> Array<felt252> {
-    //     draw(self, test_generate_dungeon(self, seed))
-    // }
-
-    // use debug::PrintTrait;
-
-    // #[test]
-    // fn ttttt(self: @ContractState) {
-    //     // let r = test_generate_dungeon(
-    //     //     self, 0x30b9924e5472b140af5bcd1c6b815e6eafad6c4ab07ddd547d1160d11e8fed
-    //     // );
-
-    //     let arr: Array<felt252> = test_get_svg(
-    //         self, 0xc604b7455f0fd6fd86ded01a01d5fe9f777b30d1b1849040198bb3eafa5a5539
-    //     );
-    //     arr.len().print();
-
-    //     let mut i = 0;
-    //     loop {
-    //         if i == arr.len() {
-    //             break;
-    //         }
-    //         let a: felt252 = *arr.at(i);
-    //         a.print();
-
-    //         i += 1;
-    //     }
-    // }
-
-    // #[external(v0)]
-    // fn test_get_layout(self: @ContractState, seed: u256) -> (Pack, u8) {
-    //     get_layout_in(self, seed, get_size_in(seed))
-    // }
-
-    // #[external(v0)]
-    // fn test_get_name(self: @ContractState, seed: u256) -> (Array<felt252>, felt252, u8) {
-    //     get_name_in(self, seed)
-    // }
-
-    // #[external(v0)]
-    // fn test_get_entities(self: @ContractState, seed: u256) -> (Array<u8>, Array<u8>, Array<u8>) {
-    //     generator::get_entities(seed, get_size_in(seed))
-    // }
-
-    // #[external(v0)]
-    // fn test_generate_dungeon(self: @ContractState, seed: u256) -> DungeonSerde {
-    //     let size = get_size_in(seed);
-
-    //     let (x_array, y_array, t_array) = generator::get_entities(seed, size);
-    //     let (mut layout, structure) = get_layout_in(seed, size);
-    //     let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
-
-    //     DungeonSerde {
-    //         size: size.try_into().unwrap(),
-    //         environment: get_environment_in(seed),
-    //         structure: structure,
-    //         legendary: legendary,
-    //         layout: layout,
-    //         entities: EntityDataSerde {
-    //             x: x_array.span(), y: y_array.span(), entity_data: t_array.span()
-    //         },
-    //         affinity: affinity,
-    //         dungeon_name: dungeon_name.span()
-    //     }
-    // }
-
-    // #[external(v0)]
-    // fn test_get_dungeon_storage(self: @ContractState, token_id: u128) -> DungeonSerde {
-    //     let dungeon = self.dungeons.read(token_id);
-    //     DungeonSerde {
-    //         size: dungeon.size,
-    //         environment: dungeon.environment,
-    //         structure: dungeon.structure,
-    //         legendary: dungeon.legendary,
-    //         layout: dungeon.layout,
-    //         entities: EntityDataSerde {
-    //             x: dungeon.entities.x.span(),
-    //             y: dungeon.entities.y.span(),
-    //             entity_data: dungeon.entities.entity_data.span()
-    //         },
-    //         affinity: dungeon.affinity,
-    //         dungeon_name: dungeon.dungeon_name.span()
-    //     }
-    // }
 
     // ---- enumerable -----
 
@@ -576,9 +265,6 @@ mod Dungeons {
         self.seeds.write(token_id, seed);
 
         self.erc721._mint(user, token_id.into());
-
-        // store generate result into storage
-        // self.dungeons.write(token_id, generate_dungeon_in(@self, seed, get_size_in(seed)));
 
         let index = self.erc721.balance_of(user);
         self.owned_tokens.write((user, index.try_into().unwrap()), token_id);
@@ -751,38 +437,13 @@ mod Dungeons {
             draw(self, self.generate_dungeon(token_id))
         }
 
-        fn generate_dungeon(self: @ContractState, token_id: u256) -> DungeonSerde {
-            let seed: u256 = get_seed_in(self, token_id);
+        // we recommend to use this function
+        fn generate_dungeon(self: @ContractState, token_id: u256) -> Dungeon {
+            let seed = get_seed_in(self, token_id);
+            let size = get_size_in(seed);
+            let dungeon = generate_dungeon_in(self, seed, size);
 
-            // let dungeon = self.dungeons.read(token_id.try_into().unwrap());
-            // if dungeon.layout.first == 0
-            //     && dungeon.layout.second == 0
-            //     && dungeon.layout.third == 0 {
-            let dungeon = generate_dungeon_in(self, seed, get_size_in(seed));
-            // }
-
-            DungeonSerde {
-                size: dungeon.size,
-                environment: dungeon.environment,
-                structure: dungeon.structure,
-                legendary: dungeon.legendary,
-                layout: dungeon.layout,
-                entities: EntityDataSerde {
-                    x: dungeon.entities.x.span(),
-                    y: dungeon.entities.y.span(),
-                    entity_data: dungeon.entities.entity_data.span()
-                },
-                affinity: dungeon.affinity,
-                dungeon_name: dungeon.dungeon_name.span()
-            }
-        }
-
-        fn generate_dungeon_value(self: @ContractState, token_id: u256) -> DungeonValue {
-            let seed: u256 = get_seed_in(self, token_id);
-
-            let dungeon = generate_dungeon_value_in(self, seed, get_size_in(seed));
-
-            DungeonValue {
+            Dungeon {
                 size: dungeon.size,
                 environment: dungeon.environment,
                 structure: dungeon.structure,
@@ -795,20 +456,8 @@ mod Dungeons {
             }
         }
 
-        fn get_entities(self: @ContractState, token_id: u256) -> EntityDataSerde {
-            let seed: u256 = get_seed_in(self, token_id);
-            let (x_array, y_array, t_array) = generator::get_entities(seed, get_size_in(seed));
-
-            EntityDataSerde { x: x_array.span(), y: y_array.span(), entity_data: t_array.span() }
-        }
-
         fn get_size(self: @ContractState, token_id: u256) -> u128 {
             get_size_in(get_seed_in(self, token_id))
-        }
-
-        fn get_layout(self: @ContractState, token_id: u256) -> (Pack, u8) {
-            let seed: u256 = get_seed_in(self, token_id);
-            get_layout_in(seed, get_size_in(seed))
         }
 
         fn get_name(self: @ContractState, token_id: u256) -> (Array<felt252>, felt252, u8) {
@@ -826,7 +475,6 @@ mod Dungeons {
             let seed = if id < 2000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        // 0x07f5ecd04e32c162638650d89afb9b7b1bd9627f6cd613de5a6badd9277c138c
                         0x075ea500c4a2834406d979114a4c1be6fa0970869225b25de1672ecbb6d891ea
                     >()
                 }
@@ -834,7 +482,6 @@ mod Dungeons {
             } else if id < 4000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        // 0x05fe55b0b2e1d9d4224f830451c62a1a421d9e8cd1159965c4686ab1a353b111
                         0x06f424fac78d406bd85368ee3fbcf7fd841a01a27466cfd025fa678050077e7f
                     >()
                 }
@@ -842,7 +489,6 @@ mod Dungeons {
             } else if id < 6000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        // 0x03a99da7854387dfa199b4cd7f2c218b0e81958d64155126ffb4fac925801df2
                         0x01587c6e9e11ff05105ee6589d75e365f8970867f381098edf36bc3c4a948198
                     >()
                 }
@@ -850,7 +496,6 @@ mod Dungeons {
             } else if id < 8000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        // 0x06db0e11d4ef2525447f1ce8f08a50712c19347bb5533a56d547b5bb41bd65b3
                         0x06847a741fd3a804d84dc41a3a5bfb6d4ffe4e1c620e2d71b80ee40157faeda1
                     >()
                 }
@@ -858,7 +503,6 @@ mod Dungeons {
             } else {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
-                        // 0x00fd4ccfcbf1f46dff702adeb07474bd055add7d0e6697c6f8793dfa3b27c8d6
                         0x03facb2063078c16833d0649bf4d9f7079bb5dc7fdc7d19337b5cb5fdc76c637
                     >()
                 }
@@ -873,49 +517,8 @@ mod Dungeons {
         }
     }
 
-
-    fn name_to_felt252(name: Array<felt252>) -> Name {
-        let len = name.len();
-        if len == 1 {
-            Name { first: *name[0], second: '', third: '', fourth: '', fifth: '' }
-        } else if len == 3 {
-            Name { first: *name[0], second: *name[1], third: *name[2], fourth: '', fifth: '' }
-        } else if len == 5 {
-            Name {
-                first: *name[0],
-                second: *name[1],
-                third: *name[2],
-                fourth: *name[3],
-                fifth: *name[4]
-            }
-        } else {
-            Name { first: '', second: '', third: '', fourth: '', fifth: '' }
-        }
-    }
-
-    fn generate_dungeon_value_in(self: @ContractState, seed: u256, size: u128) -> DungeonValue {
-        let (points, doors) = generator::generate_entities(seed, size);
-        let (mut layout, structure) = get_layout_in(seed, size);
-        let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
-
-        DungeonValue {
-            size: size.try_into().unwrap(),
-            environment: get_environment_in(seed),
-            structure: structure,
-            legendary: legendary,
-            layout: layout,
-            doors: doors,
-            points: points,
-            affinity: affinity,
-            dungeon_name: {
-                name_to_felt252(dungeon_name)
-            }
-        }
-    }
-
     fn generate_dungeon_in(self: @ContractState, seed: u256, size: u128) -> Dungeon {
-        let (x_array, y_array, t_array) = generator::get_entities(seed, size);
-        let (mut layout, structure) = get_layout_in(seed, size);
+        let (layout, structure, points, doors) = generate_layout_and_entities(seed, size);
         let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
 
         Dungeon {
@@ -924,17 +527,12 @@ mod Dungeons {
             structure: structure,
             legendary: legendary,
             layout: layout,
-            entities: EntityData { x: x_array, y: y_array, entity_data: t_array },
+            doors: doors,
+            points: points,
             affinity: affinity,
-            dungeon_name: dungeon_name
+            dungeon_name: dungeon_name.span(),
         }
     }
-
-
-    fn get_layout_in(seed: u256, size: u128) -> (Pack, u8) {
-        generator::get_layout(seed, size)
-    }
-
 
     fn is_valid(self: @ContractState, token_id: u256) {
         if token_id > 9000 {
@@ -953,11 +551,9 @@ mod Dungeons {
         seed
     }
 
-
     fn get_size_in(seed: u256) -> u128 {
         random(seed.left_shift(4), 8, 25)
     }
-
 
     fn get_environment_in(seed: u256) -> u8 {
         let rand = random(seed.left_shift(8), 0, 100);
@@ -976,7 +572,6 @@ mod Dungeons {
             5
         }
     }
-
 
     fn get_name_in(self: @ContractState, seed: u256) -> (Array<felt252>, felt252, u8) {
         // 'get_name'.print();
@@ -1062,11 +657,7 @@ mod Dungeons {
         }
     }
 
-    fn draw(self: @ContractState, dungeon: DungeonSerde) -> Array<felt252> {
-        let x = dungeon.entities.x;
-        let y = dungeon.entities.y;
-        let entity_data = dungeon.entities.entity_data;
-
+    fn draw(self: @ContractState, dungeon: Dungeon) -> Array<felt252> {
         // Hardcoded to save memory: Width = 100
         // Setup SVG and draw our background
         // We write at 100x100 and scale it 5x to 500x500 to avoid safari small rendering
@@ -1096,14 +687,14 @@ mod Dungeons {
         };
 
         parts = append(parts, (chunk_dungeon(self, dungeon, ref helper)).span());
-        parts = append(parts, draw_entities(self, x, y, entity_data, dungeon, helper).span());
+        parts = append(parts, draw_entities(self, dungeon, helper).span());
         parts.append('</svg>');
 
         parts
     }
 
     fn chunk_dungeon(
-        self: @ContractState, dungeon: DungeonSerde, ref helper: RenderHelper
+        self: @ContractState, dungeon: Dungeon, ref helper: RenderHelper
     ) -> Array<felt252> {
         let mut layout = dungeon.layout;
         let mut parts: Array<felt252> = ArrayTrait::new();
@@ -1204,23 +795,22 @@ mod Dungeons {
 
     // Draw each entity as a pixel on the map
     fn draw_entities(
-        self: @ContractState,
-        x: Span<u8>,
-        y: Span<u8>,
-        entityData: Span<u8>,
-        dungeon: DungeonSerde,
-        helper: RenderHelper
+        self: @ContractState, dungeon: Dungeon, helper: RenderHelper
     ) -> Array<felt252> {
         let mut parts: Array<felt252> = ArrayTrait::new();
 
+        let (x, y, entity_type) = parse_entities(
+            dungeon.size.into(), dungeon.points, dungeon.doors
+        );
+
         let mut i: usize = 0;
         loop {
-            if i == entityData.len() {
+            if i == entity_type.len() {
                 break;
             }
             let x = helper.start + (*x[i] % dungeon.size).into() * helper.pixel;
             let y = helper.start + (*y[i]).into() * helper.pixel;
-            let color_index: u8 = dungeon.environment * 4 + 2 + *entityData[i];
+            let color_index: u8 = dungeon.environment * 4 + 2 + *entity_type[i];
             let color: felt252 = self.colors.read(color_index);
             parts = draw_tile(parts, x, y, helper.pixel, helper.pixel, color);
 
@@ -1289,10 +879,9 @@ mod Dungeons {
         }
     }
 
-    fn render_token_URI(
-        self: @ContractState, tokenId: u256, dungeon: DungeonSerde
-    ) -> Array<felt252> {
-        let (points, doors) = generator::count_entities(dungeon.entities.entity_data);
+    fn render_token_URI(self: @ContractState, tokenId: u256, dungeon: Dungeon) -> Array<felt252> {
+        let points = dungeon.points.count_bit();
+        let doors = dungeon.doors.count_bit();
 
         // Generate dungeon
         let mut output = draw(self, dungeon);
@@ -1357,7 +946,6 @@ mod Dungeons {
 
         json
     }
-
     // ------------------------------------------ Constructor ------------------------------------------
 
     #[constructor]
@@ -1366,7 +954,6 @@ mod Dungeons {
 
         self.restricted.write(false);
         self.last_mint.write(9000);
-        // self.claimed.write(0);
 
         self.ownable.initializer(owner);
 

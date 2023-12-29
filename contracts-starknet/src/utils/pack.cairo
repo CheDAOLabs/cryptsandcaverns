@@ -59,7 +59,7 @@ impl PackImpl of PackTrait {
     /// # Returns
     ///
     /// A boolean value indicating whether the bit at the specified position is set (`true`) or not (`false`).
-    fn get_bit(ref self: Pack, position: u128) -> bool {
+    fn get_bit(self: Pack, position: u128) -> bool {
         assert(position < 625, 'invalid position');
         if position < 248 {
             self.first.into() | get_pow(247 - position) == self.first.into()
@@ -121,7 +121,7 @@ impl PackImpl of PackTrait {
     /// # Returns
     ///
     /// The total count of set bits as a `u128`.
-    fn count_bit(ref self: Pack) -> u128 {
+    fn count_bit(self: Pack) -> u128 {
         let mut count: u128 = 0;
         count_loop(self.first.into(), count)
             + count_loop(self.second.into(), count)
@@ -151,7 +151,7 @@ mod test {
     use debug::PrintTrait;
 
     #[test]
-    #[ignore]
+    // #[ignore]
     #[available_gas(3000000)]
     fn test() {
         let mut pack: Pack = Pack { first: 0, second: 0, third: 0 };

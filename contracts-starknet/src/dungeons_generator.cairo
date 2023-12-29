@@ -223,12 +223,10 @@ fn generate_points(ref settings: Settings, ref map: Pack, probability: u128) -> 
 
 fn get_entities(seed: u256, size: u128) -> (Array<u8>, Array<u8>, Array<u8>) {
     let (mut points, mut doors) = generate_entities(seed, size);
-    parse_entities(size, ref points, ref doors)
+    parse_entities(size, points, doors)
 }
 
-fn parse_entities(
-    size: u128, ref points: Pack, ref doors: Pack
-) -> (Array<u8>, Array<u8>, Array<u8>) {
+fn parse_entities(size: u128, points: Pack, doors: Pack) -> (Array<u8>, Array<u8>, Array<u8>) {
     let mut x_arr: Array<u8> = ArrayTrait::new();
     let mut y_arr: Array<u8> = ArrayTrait::new();
     let mut entity_type: Array<u8> = ArrayTrait::new();
@@ -276,47 +274,55 @@ fn get_doors(seed: u256, size: u128) -> (Pack, u128) {
     (doors, doors.count_bit())
 }
 
-fn generate_entities(seed: u256, size: u128) -> (Pack, Pack) {
+fn generate_layout_and_entities(seed: u256, size: u128) -> (Pack, u8, Pack, Pack) {
     let mut settings: Settings = build_settings(seed, size);
+
+    let mut layout = PackTrait::new();
+    let mut points = PackTrait::new();
+    let mut doors = PackTrait::new();
+    let mut structure = 0;
 
     if random_with_counter_plus(ref settings, 0, 100) > 30 {
         let (mut rooms, mut floor) = generate_rooms(ref settings);
-
         let mut hallways = generate_hallways(ref settings, @rooms);
+
+        layout = floor;
+        layout.add_bit(hallways);
 
         // hallways does not take the bit which floor had mark already
         hallways.subtract_bit(floor);
 
-        let hallways_points: Pack = if hallways.count_bit() > 0 {
-            generate_points(ref settings, ref hallways, 40 / square_root(hallways.count_bit()))
-        } else {
-            PackTrait::new()
-        };
-
-        (
-            generate_points(ref settings, ref floor, 12 / square_root(settings.size - 6)),
-            hallways_points
-        )
+        doors =
+            if hallways.count_bit() > 0 {
+                generate_points(ref settings, ref hallways, 40 / square_root(hallways.count_bit()))
+            } else {
+                PackTrait::new()
+            };
+        points = generate_points(ref settings, ref floor, 12 / square_root(settings.size - 6));
     } else {
+        structure = 1;
         let mut cavern: Pack = generate_cavern(ref settings);
         let mut num_tiles = cavern.count_bit();
+
+        layout = cavern;
 
         // to avoid calculation error
         if num_tiles <= 6 {
             num_tiles = 7;
         }
 
-        let mut points: Pack = generate_points(
-            ref settings, ref cavern, 12 / square_root(num_tiles - 6)
-        );
-        let mut doors: Pack = generate_points(
-            ref settings, ref cavern, 40 / square_root(num_tiles)
-        );
+        points = generate_points(ref settings, ref cavern, 12 / square_root(num_tiles - 6));
+        doors = generate_points(ref settings, ref cavern, 40 / square_root(num_tiles));
 
         points.subtract_bit(doors);
-
-        (points, doors)
     }
+
+    (layout, structure, points, doors)
+}
+
+fn generate_entities(seed: u256, size: u128) -> (Pack, Pack) {
+    let (layout, structure, points, doors) = generate_layout_and_entities(seed, size);
+    (points, doors)
 }
 
 fn count_entities(entities_data: Span<u8>) -> (u8, u8) {
@@ -544,7 +550,7 @@ mod test {
     use debug::PrintTrait;
 
     #[test]
-    #[ignore]
+    // #[ignore]
     #[available_gas(30000000)]
     fn test_set_bit() {
         let mut map: Pack = PackTrait::new();
@@ -566,7 +572,7 @@ mod test {
     }
 
     #[test]
-    #[ignore]
+    // #[ignore]
     #[available_gas(30000000)]
     fn test_sqr() {
         assert(square_root(17) == 4, 'compute square root of 17');
@@ -574,7 +580,7 @@ mod test {
     }
 
     #[test]
-    #[ignore]
+    // #[ignore]
     #[available_gas(300000000000000)]
     fn test_generate_room() {
         {}
