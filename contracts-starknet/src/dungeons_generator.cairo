@@ -403,12 +403,12 @@ fn mark_the_floor(ref floor: Pack, current: Room, size: u128) {
 fn connect_halls_vertical(
     ref hallways: Pack, current_y: u128, previous_y: u128, x: u128, size: u128
 ) {
-    let mut min: u128 = if current_y > previous_y {
+    let min: u128 = if current_y > previous_y {
         previous_y
     } else {
         current_y
     };
-    let mut max: u128 = if current_y > previous_y {
+    let max: u128 = if current_y > previous_y {
         current_y
     } else {
         previous_y
@@ -426,12 +426,12 @@ fn connect_halls_vertical(
 fn connect_halls_horizontal(
     ref hallways: Pack, current_x: u128, previous_x: u128, y: u128, size: u128
 ) {
-    let mut min: u128 = if current_x > previous_x {
+    let min: u128 = if current_x > previous_x {
         previous_x
     } else {
         current_x
     };
-    let mut max: u128 = if current_x > previous_x {
+    let max: u128 = if current_x > previous_x {
         current_x
     } else {
         previous_x
