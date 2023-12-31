@@ -195,14 +195,10 @@ fn generate_hallways(ref settings: Settings, rooms: @Array<Room>) -> Pack {
     hallways
 }
 
-fn generate_points(ref settings: Settings, ref map: Pack, probability: u128) -> Pack {
+fn generate_points(ref settings: Settings, map: Pack, probability: u128) -> Pack {
     let mut points: Pack = PackTrait::new();
 
-    // maintain consistency with the source code
-    let mut prob: u128 = random_with_counter_plus(ref settings, 0, probability);
-    if (prob == 0) {
-        prob = 1;
-    }
+    let prob: u128 = random_with_counter_plus(ref settings, 1, probability);
 
     let mut counter: u128 = 0;
     let limit: u128 = settings.size * settings.size;
@@ -265,12 +261,12 @@ fn parse_entities(size: u128, points: Pack, doors: Pack) -> (Array<u8>, Array<u8
 }
 
 fn get_points(seed: u256, size: u128) -> (Pack, u128) {
-    let (mut points, mut doors) = generate_entities(seed, size);
+    let (points, doors) = generate_entities(seed, size);
     (points, points.count_bit())
 }
 
 fn get_doors(seed: u256, size: u128) -> (Pack, u128) {
-    let (mut points, mut doors) = generate_entities(seed, size);
+    let (points, doors) = generate_entities(seed, size);
     (doors, doors.count_bit())
 }
 
@@ -283,7 +279,7 @@ fn generate_layout_and_entities(seed: u256, size: u128) -> (Pack, u8, Pack, Pack
     let mut structure = 0;
 
     if random_with_counter_plus(ref settings, 0, 100) > 30 {
-        let (mut rooms, mut floor) = generate_rooms(ref settings);
+        let (rooms, floor) = generate_rooms(ref settings);
         let mut hallways = generate_hallways(ref settings, @rooms);
 
         layout = floor;
@@ -294,14 +290,14 @@ fn generate_layout_and_entities(seed: u256, size: u128) -> (Pack, u8, Pack, Pack
 
         doors =
             if hallways.count_bit() > 0 {
-                generate_points(ref settings, ref hallways, 40 / square_root(hallways.count_bit()))
+                generate_points(ref settings, hallways, 40 / square_root(hallways.count_bit()))
             } else {
                 PackTrait::new()
             };
-        points = generate_points(ref settings, ref floor, 12 / square_root(settings.size - 6));
+        points = generate_points(ref settings, floor, 12 / square_root(settings.size - 6));
     } else {
         structure = 1;
-        let mut cavern: Pack = generate_cavern(ref settings);
+        let cavern: Pack = generate_cavern(ref settings);
         let mut num_tiles = cavern.count_bit();
 
         layout = cavern;
@@ -311,8 +307,8 @@ fn generate_layout_and_entities(seed: u256, size: u128) -> (Pack, u8, Pack, Pack
             num_tiles = 7;
         }
 
-        points = generate_points(ref settings, ref cavern, 12 / square_root(num_tiles - 6));
-        doors = generate_points(ref settings, ref cavern, 40 / square_root(num_tiles));
+        points = generate_points(ref settings, cavern, 12 / square_root(num_tiles - 6));
+        doors = generate_points(ref settings, cavern, 40 / square_root(num_tiles));
 
         points.subtract_bit(doors);
     }
