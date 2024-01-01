@@ -566,15 +566,13 @@ mod Dungeons {
         let unique_seed = random(seed.left_shift(15), 0, 10000);
 
         let mut name_parts = ArrayTrait::<felt252>::new();
-        let affinity = 'none';
-        let legendary = 0;
+        let mut affinity = 'none';
+        let mut legendary = 0;
 
         if (unique_seed < 17) {
             // Unique name
-            let legendary = 1;
-            let a = self.UNIQUE.read(unique_seed);
-            name_parts.append(a);
-            return (name_parts, affinity, legendary);
+            legendary = 1;
+            name_parts.append(self.UNIQUE.read(unique_seed));
         } else {
             let base_seed = random(seed.left_shift(16), 0, 38);
 
@@ -588,29 +586,23 @@ mod Dungeons {
             } else if unique_seed <= 1800 {
                 // Prefix + Base Land + Suffix
                 let suffixs_random = random(seed.left_shift(27), 0, 59);
-                let affinity = self.SUFFIXES.read(suffixs_random);
-                let prefix_seed = random(seed.left_shift(42), 0, 29);
-
-                name_parts.append(self.PREFIX.read(prefix_seed));
+                affinity = self.SUFFIXES.read(suffixs_random);
+                name_parts.append(self.PREFIX.read(random(seed.left_shift(42), 0, 29)));
                 name_parts.append(' ');
                 name_parts.append(self.LAND.read(base_seed));
                 name_parts.append(' of ');
                 name_parts.append(affinity);
             } else if unique_seed <= 4000 {
                 // Base Land + Suffix
-                let suffixs_random = random(seed.left_shift(51), 0, 59);
-
+                affinity = self.SUFFIXES.read(random(seed.left_shift(51), 0, 59));
                 name_parts.append(self.LAND.read(base_seed));
                 name_parts.append(' of ');
-                name_parts.append(self.SUFFIXES.read(suffixs_random));
+                name_parts.append(affinity);
             } else if unique_seed <= 6500 {
                 // Prefix + Base Land
-                let affinity = self.LAND.read(base_seed);
-                let prefix_seed = random(seed.left_shift(59), 0, 29);
-
-                name_parts.append(self.PREFIX.read(prefix_seed));
+                name_parts.append(self.PREFIX.read(random(seed.left_shift(59), 0, 29)));
                 name_parts.append(' ');
-                name_parts.append(affinity);
+                name_parts.append(self.LAND.read(base_seed));
             } else {
                 // Base Land
                 name_parts.append(self.LAND.read(base_seed));

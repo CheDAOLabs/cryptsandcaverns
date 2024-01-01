@@ -8,7 +8,7 @@ For more infomation, you can check [README](https://github.com/CheDAOLabs/crypts
 ## Sepolia Address
 
 ```shell
-0x075eb10debf20910245d6b670042a99e3020a25c2f564e9aab9cf1dbb9500d91
+0x04cc07139853629d99aecb5d21fb0fc928297e2548bdf5cf46e4c92eb4ab1480
 ```
 
 # Starknet / Cairo
