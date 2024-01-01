@@ -199,7 +199,10 @@ fn generate_hallways(ref settings: Settings, rooms: @Array<Room>) -> Pack {
 fn generate_points(ref settings: Settings, map: Pack, probability: u128) -> Pack {
     let mut points: Pack = PackTrait::new();
 
-    let prob: u128 = random_with_counter_plus(ref settings, 1, probability);
+    let mut prob: u128 = random_with_counter_plus(ref settings, 0, probability);
+    if prob == 0 {
+        prob = 1;
+    }
 
     let mut counter: u128 = 0;
     let limit: u128 = settings.size * settings.size;
@@ -618,6 +621,8 @@ mod test {
                 && map.third == 0x0,
             'room error'
         );
+        let (x_array, y_array, t_array) = get_entities(seed, size);
+        // print_array(@x_array, @y_array, @t_array);
     }
 
     fn print_map(map: Pack, structure: u8) {

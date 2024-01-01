@@ -51,7 +51,7 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
         svg: "",
     }
 
-    // console.log("id: " + i);
+    console.log("id: " + i);
 
     let dungeon;
     try {
@@ -100,7 +100,7 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
         dungeon_data.svg = atob(data.image.split(",")[1]);
 
         let layout = BigInt(await ethContract.getLayout(i)).toString(2);
-        dungeon_data.layout = layout.padStart(Math.ceil(layout.length / 256) * 256, "0");
+        dungeon_data.layout = layout.padStart(Math.ceil(layout.length / 256) * 256, "0").padEnd(744, "0");
 
         let entity = await ethContract.getEntities(i);
         dungeon_data.doors = "".padEnd(744, "0");
@@ -119,39 +119,78 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
             }
         }
 
-        console.info(dungeon_data);
+        // console.info(dungeon_data);
 
         dungeon = await starknetContract.generate_dungeon(i);
-        
-        let dungeon_starknet = {
-            id: i,
-            // seed: "0x" + BigInt(seed).toString(16),
-            name: decodeArray(dungeon.dungeon_name),
-            affinity: shortString.decodeShortString(dungeon.affinity),
-            legendary: Number(dungeon.legendary),
-            environment: Number(dungeon.environment),
-            structure: Number(dungeon.structure),
-            size: Number(dungeon.size),
-            layout: decodePack(dungeon.layout),
-            doors: decodePack(dungeon.doors),
-            points: decodePack(dungeon.points),
-            svg: "",
-        }
-        console.log(dungeon_starknet);
 
-        if (dungeon_data.name != decodeArray(dungeon.dungeon_name)
-            || dungeon_data.affinity != shortString.decodeShortString(dungeon.affinity)
-            || dungeon_data.legendary != Number(dungeon.legendary)
-            || dungeon_data.environment != Number(dungeon.environment)
-            || dungeon_data.structure != Number(dungeon.structure)
-            || dungeon_data.size != Number(dungeon.size)
-            || dungeon_data.layout != decodePack(dungeon.layout)
-            || dungeon_data.doors != decodePack(dungeon.doors)
-            || dungeon_data.points != decodePack(dungeon.points)) {
-            console.warn("wrong data: ", i);
+        flag = false;
+        if (dungeon_data.name != decodeArray(dungeon.dungeon_name)) {
+            console.warn("wrong name: ", i);
+            console.info(dungeon_data.name);
+            console.info(decodeArray(dungeon.dungeon_name));
+            flag = true;
+        }
+
+        if (dungeon_data.affinity != decodeArray(dungeon.affinity)) {
+            console.warn("wrong affinity: ", i);
+            console.info(dungeon_data.affinity);
+            console.info(decodeArray(dungeon.affinity));
+            flag = true;
+        }
+
+        if (dungeon_data.legendary != Number(dungeon.legendary)) {
+            console.warn("wrong legendary: ", i);
+            console.info(dungeon_data.legendary);
+            console.info(Number(dungeon.legendary));
+            flag = true;
+        }
+
+        if (dungeon_data.environment != Number(dungeon.environment)) {
+            console.warn("wrong environment: ", i);
+            console.info(dungeon_data.environment);
+            console.info(Number(dungeon.environment));
+            flag = true;
+        }
+
+        if (dungeon_data.structure != Number(dungeon.structure)) {
+            console.warn("wrong structure: ", i);
+            console.info(dungeon_data.structure);
+            console.info(Number(dungeon.structure));
+            flag = true;
+        }
+
+        if (dungeon_data.size != Number(dungeon.size)) {
+            console.warn("wrong size: ", i);
+            console.info(dungeon_data.size);
+            console.info(Number(dungeon.size));
+            flag = true;
+        }
+
+        if (dungeon_data.layout != decodePack(dungeon.layout)) {
+            console.warn("wrong layout: ", i);
+            console.info(dungeon_data.layout);
+            console.info(decodePack(dungeon.layout));
+            flag = true;
+        }
+
+        if (dungeon_data.doors != decodePack(dungeon.doors)) {
+            console.warn("wrong doors: ", i);
+            console.info(dungeon_data.doors);
+            console.info(decodePack(dungeon.doors));
+            flag = true;
+        }
+
+        if (dungeon_data.points != decodePack(dungeon.points)) {
+            console.warn("wrong points: ", i);
+            console.info(dungeon_data.points);
+            console.info(decodePack(dungeon.points));
+            flag = true;
+        }
+
+        if (flag){
             array.push(i);
-        } else {
-            console.info("correct data: ", i);
+        }else{
+            console.info("correct: ", i);
         }
 
     } catch (e) {

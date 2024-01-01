@@ -46,7 +46,7 @@ import { connect } from "@argent/get-starknet"
 import { useRoute } from 'vue-router';
 import abi from "./abi.json";
 
-const address = "0x04cc07139853629d99aecb5d21fb0fc928297e2548bdf5cf46e4c92eb4ab1480";
+const address = "0x075ab1b186675f387c2099e5f46ffb9b79070eb058d6f8cedea1beb1b88ce3d4";
 
 export default {
   name: 'App',
