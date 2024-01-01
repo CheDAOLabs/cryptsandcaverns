@@ -124,14 +124,15 @@ fn generate_cavern(ref settings: Settings) -> Pack {
     let mut last_direction: u8 = 0;
     let mut next_direction: u8 = 0;
 
+    // TODO 
     let mut i = 0;
     loop {
         if i == holes {
             break;
         }
 
-        let mut x = random_shift_counter_plus(ref settings, 0, settings.size);
-        let mut y = random_shift_counter_plus(ref settings, 0, settings.size);
+        let x = random_shift_counter_plus(ref settings, 0, settings.size);
+        let y = random_shift_counter_plus(ref settings, 0, settings.size);
 
         explore_in_cavern(ref settings, ref cavern, ref last_direction, ref next_direction, x, y);
 
