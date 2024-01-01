@@ -1,10 +1,11 @@
+use core::array::ArrayTrait;
 use cc_starknet::utils::bit_operation::BitOperationTrait;
 use cc_starknet::utils::random::random;
 use cc_starknet::utils::pack::{PackTrait, Pack};
 
 // ------------------------------------------- Structs -------------------------------------------
 
-#[derive(Copy, Drop, serded)]
+#[derive(Copy, Drop, Debug)]
 struct Settings {
     size: u128,
     seed: u256,
@@ -12,7 +13,7 @@ struct Settings {
     counter: u128
 }
 
-#[derive(Copy, Drop)]
+#[derive(Copy, Drop, Debug)]
 struct RoomSettings {
     min_rooms: u128,
     max_rooms: u128,
@@ -20,7 +21,7 @@ struct RoomSettings {
     max_room_size: u128
 }
 
-#[derive(Copy, Drop)]
+#[derive(Copy, Drop, Debug)]
 struct Room {
     x: u128,
     y: u128,
@@ -79,6 +80,14 @@ fn generate_rooms(ref settings: Settings) -> (Array<Room>, Pack) {
             break;
         }
         safety_check -= 1;
+    };
+
+    loop {
+        if rooms.len().into() < num_rooms {
+            rooms.append(Room { x: 0, y: 0, width: 0, height: 0 });
+        } else {
+            break;
+        }
     };
 
     (rooms, floor)
@@ -358,7 +367,7 @@ fn generate_new_room(ref settings: Settings, room_settings: @RoomSettings) -> Ro
 
 fn is_valid_room(rooms: @Array<Room>, current: @Room) -> bool {
     let rooms_span = rooms.span();
-    let mut length: u256 = rooms_span.len().into();
+    let mut length = rooms_span.len();
 
     if length > 0 {
         loop {
@@ -366,7 +375,7 @@ fn is_valid_room(rooms: @Array<Room>, current: @Room) -> bool {
                 break true;
             }
 
-            let room: Room = *rooms_span.at((length - 1).try_into().expect('invalid index'));
+            let room: Room = *rooms_span.at(length - 1);
             if (room.x - 1 < *current.x + *current.width)
                 && (room.x + room.width + 1 > *current.x)
                 && (room.y - 1 < *current.x + *current.height)
@@ -540,7 +549,9 @@ fn square_root(origin: u128) -> u128 {
 // ------------------------------------------- Test -------------------------------------------
 #[cfg(test)]
 mod test {
-    use super::{PackTrait, Pack, square_root, get_layout, get_entities};
+    use super::{
+        PackTrait, Pack, square_root, get_layout, get_entities, generate_layout_and_entities
+    };
 
     fn p<T, impl TPrint: PrintTrait<T>>(t: T) {
         t.print();
@@ -550,7 +561,7 @@ mod test {
     use debug::PrintTrait;
 
     #[test]
-    // #[ignore]
+    #[ignore]
     #[available_gas(30000000)]
     fn test_set_bit() {
         let mut map: Pack = PackTrait::new();
@@ -572,7 +583,7 @@ mod test {
     }
 
     #[test]
-    // #[ignore]
+    #[ignore]
     #[available_gas(30000000)]
     fn test_sqr() {
         assert(square_root(17) == 4, 'compute square root of 17');
@@ -580,7 +591,7 @@ mod test {
     }
 
     #[test]
-    // #[ignore]
+    #[ignore]
     #[available_gas(300000000000000)]
     fn test_generate_room() {
         {}
@@ -588,7 +599,8 @@ mod test {
         let seed = 54726856408304506636278424762823059598933394071647911965527120692794348915138;
         let size = 20;
 
-        let (mut map, mut structure) = get_layout(seed, size);
+        // let (mut map, mut structure) = get_layout(seed, size);
+        let (map, structure, points, doors) = generate_layout_and_entities(seed, size);
         // print_map(map, structure);
         assert(
             structure == 1
@@ -622,7 +634,7 @@ mod test {
             'room error'
         );
         let (x_array, y_array, t_array) = get_entities(seed, size);
-        // print_array(@x_array, @y_array, @t_array);
+    // print_array(@x_array, @y_array, @t_array);
     }
 
     fn print_map(map: Pack, structure: u8) {

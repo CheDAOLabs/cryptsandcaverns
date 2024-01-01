@@ -73,17 +73,17 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
                     case "Desert Plateau":
                         dungeon_data.environment = 0;
                         return;
-                    case "Forest Ruins":
-                        dungeon_data.environment = 2;
-                        return;
-                    case "Underwater Keep":
-                        dungeon_data.environment = 4;
-                        return;
                     case "Stone Temple":
                         dungeon_data.environment = 1;
                         return;
+                    case "Forest Ruins":
+                        dungeon_data.environment = 2;
+                        return;
                     case "Mountain Deep":
                         dungeon_data.environment = 3;
+                        return;
+                    case "Underwater Keep":
+                        dungeon_data.environment = 4;
                         return;
                     case "Ember's Glow":
                         dungeon_data.environment = 5;
@@ -100,8 +100,8 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
         dungeon_data.svg = atob(data.image.split(",")[1]);
 
         let layout = BigInt(await ethContract.getLayout(i)).toString(2);
-        dungeon_data.layout = layout.padStart(Math.ceil(layout.length / 256) * 256, "0").padEnd(744, "0");
-
+        let temp = layout.padStart(Math.ceil(layout.length / 256) * 256, "0");
+        dungeon_data.layout = temp.length <= 744 ? temp.padEnd(744, "0") : temp.slice(0, 744);
         let entity = await ethContract.getEntities(i);
         dungeon_data.doors = "".padEnd(744, "0");
         dungeon_data.points = "".padEnd(744, "0");
@@ -114,7 +114,7 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
                 if (Number(t[u]) === 0) {
                     dungeon_data.doors = dungeon_data.doors.slice(0, cord) + "1" + dungeon_data.doors.slice(cord + 1);
                 } else {
-                    dungeon_data.points = dungeon_data.doors.slice(0, cord) + "1" + dungeon_data.doors.slice(cord + 1);
+                    dungeon_data.points = dungeon_data.points.slice(0, cord) + "1" + dungeon_data.points.slice(cord + 1);
                 }
             }
         }
@@ -123,7 +123,7 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
 
         dungeon = await starknetContract.generate_dungeon(i);
 
-        flag = false;
+        let flag = false;
         if (dungeon_data.name != decodeArray(dungeon.dungeon_name)) {
             console.warn("wrong name: ", i);
             console.info(dungeon_data.name);
@@ -131,10 +131,10 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
             flag = true;
         }
 
-        if (dungeon_data.affinity != decodeArray(dungeon.affinity)) {
+        if (dungeon_data.affinity != shortString.decodeShortString(dungeon.affinity)) {
             console.warn("wrong affinity: ", i);
             console.info(dungeon_data.affinity);
-            console.info(decodeArray(dungeon.affinity));
+            console.info(shortString.decodeShortString(dungeon.affinity));
             flag = true;
         }
 
@@ -187,9 +187,9 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
             flag = true;
         }
 
-        if (flag){
+        if (flag) {
             array.push(i);
-        }else{
+        } else {
             console.info("correct: ", i);
         }
 
@@ -226,7 +226,7 @@ function buildStarknetContract() {
         // abi
         abi,
         // address
-        "0x04cc07139853629d99aecb5d21fb0fc928297e2548bdf5cf46e4c92eb4ab1480",
+        "0x07fffe245bb9522568412c4f92fcb1041d8179ae25189a8d187d387a265f2537",
         // rpc
         new RpcProvider({ nodeUrl: "https://rpc-sepolia.staging.nethermind.dev" }));
 }

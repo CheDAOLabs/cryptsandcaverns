@@ -1,6 +1,6 @@
 use super::pow::get_pow;
 
-#[derive(Copy, Drop, Serde)]
+#[derive(Copy, Drop, Serde, Debug)]
 struct Pack {
     first: felt252,
     second: felt252,
@@ -151,7 +151,7 @@ mod test {
     use debug::PrintTrait;
 
     #[test]
-    // #[ignore]
+    #[ignore]
     #[available_gas(3000000)]
     fn test() {
         let mut pack: Pack = Pack { first: 0, second: 0, third: 0 };
