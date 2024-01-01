@@ -441,19 +441,7 @@ mod Dungeons {
         fn generate_dungeon(self: @ContractState, token_id: u256) -> Dungeon {
             let seed = get_seed_in(self, token_id);
             let size = get_size_in(seed);
-            let dungeon = generate_dungeon_in(self, seed, size);
-
-            Dungeon {
-                size: dungeon.size,
-                environment: dungeon.environment,
-                structure: dungeon.structure,
-                legendary: dungeon.legendary,
-                layout: dungeon.layout,
-                doors: dungeon.doors,
-                points: dungeon.points,
-                affinity: dungeon.affinity,
-                dungeon_name: dungeon.dungeon_name
-            }
+            generate_dungeon_in(self, seed, size)
         }
 
         fn get_size(self: @ContractState, token_id: u256) -> u128 {
