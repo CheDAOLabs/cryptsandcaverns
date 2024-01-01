@@ -24,11 +24,9 @@ fn random(seed: u256, min: u128, max: u128) -> u128 {
 
     let result = (u256 {
         low: integer::u128_byte_reverse(output.high), // just comment here to
-        high: integer::u128_byte_reverse(output.low) //  avoid stupid format
+        high: integer::u128_byte_reverse(output.low) // avoid stupid format
     }) % ((max - min).into());
 
-    // we don't need output that needs u256 range
-    // u256 is thirsty for gas
     min + result.try_into().expect('over u256 range')
 }
 
