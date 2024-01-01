@@ -16,6 +16,9 @@ impl BitOperation of BitOperationTrait {
     ///
     /// The result of the left shift operation as a `u256`.
     fn left_shift(mut self: u256, mut count: u128) -> u256 {
+        if count > 255 {
+            return 0;
+        }
         let (result, overflow) = integer::u256_overflow_mul(self, get_pow(count));
         result
     }
