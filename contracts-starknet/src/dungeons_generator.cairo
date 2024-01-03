@@ -378,6 +378,7 @@ fn is_valid_room(rooms: @Array<Room>, current: @Room) -> bool {
             let room: Room = *rooms_span.at(length - 1);
             if (room.x - 1 < *current.x + *current.width)
                 && (room.x + room.width + 1 > *current.x)
+                // bad x here
                 && (room.y - 1 < *current.x + *current.height)
                 && (room.y + room.height > *current.y) {
                 break false;
@@ -396,7 +397,6 @@ fn mark_the_floor(ref floor: Pack, current: Room, size: u128) {
         if y == current.y + current.height {
             break;
         }
-
         let mut x = current.x;
         loop {
             if x == current.x + current.width {
@@ -412,17 +412,11 @@ fn mark_the_floor(ref floor: Pack, current: Room, size: u128) {
 fn connect_halls_vertical(
     ref hallways: Pack, current_y: u128, previous_y: u128, x: u128, size: u128
 ) {
-    let min: u128 = if current_y > previous_y {
-        previous_y
+    let (mut y, max) = if current_y < previous_y {
+        (current_y, previous_y)
     } else {
-        current_y
+        (previous_y, current_y)
     };
-    let max: u128 = if current_y > previous_y {
-        current_y
-    } else {
-        previous_y
-    };
-    let mut y = min;
     loop {
         if y == max {
             break;
@@ -435,17 +429,11 @@ fn connect_halls_vertical(
 fn connect_halls_horizontal(
     ref hallways: Pack, current_x: u128, previous_x: u128, y: u128, size: u128
 ) {
-    let min: u128 = if current_x > previous_x {
-        previous_x
+    let (mut x, max) = if current_x < previous_x {
+        (current_x, previous_x)
     } else {
-        current_x
+        (previous_x, current_x)
     };
-    let max: u128 = if current_x > previous_x {
-        current_x
-    } else {
-        previous_x
-    };
-    let mut x = min;
     loop {
         if x == max {
             break;
