@@ -1072,24 +1072,23 @@ mod Dungeons {
         self.SUFFIXES.write(59, 'Wrath');
 
         //init UNIQUE
-        self.UNIQUE.write(0, 'Wrath');
-        self.UNIQUE.write(1, '\'Armageddon\'');
-        self.UNIQUE.write(2, '\'Mind\'s Eye\'');
-        self.UNIQUE.write(3, '\'Nostromo\'');
-        self.UNIQUE.write(4, '\'Oblivion\'');
-        self.UNIQUE.write(5, '\'The Chasm\'');
-        self.UNIQUE.write(6, '\'The Crypt\'');
-        self.UNIQUE.write(7, '\'The Depths\'');
-        self.UNIQUE.write(8, '\'The End\'');
-        self.UNIQUE.write(9, '\'The Expanse\'');
-        self.UNIQUE.write(10, '\'The Gale\'');
-        self.UNIQUE.write(11, '\'The Hook\'');
-        self.UNIQUE.write(12, '\'The Maelstrom\'');
-        self.UNIQUE.write(13, '\'The Mouth\'');
-        self.UNIQUE.write(14, '\'The Muck\'');
-        self.UNIQUE.write(15, '\'The Shelf\'');
-        self.UNIQUE.write(16, '\'The Vale\'');
-        self.UNIQUE.write(17, '\'The Veldt\'');
+        self.UNIQUE.write(0, '\'Armageddon\'');
+        self.UNIQUE.write(1, '\'Mind\'s Eye\'');
+        self.UNIQUE.write(2, '\'Nostromo\'');
+        self.UNIQUE.write(3, '\'Oblivion\'');
+        self.UNIQUE.write(4, '\'The Chasm\'');
+        self.UNIQUE.write(5, '\'The Crypt\'');
+        self.UNIQUE.write(6, '\'The Depths\'');
+        self.UNIQUE.write(7, '\'The End\'');
+        self.UNIQUE.write(8, '\'The Expanse\'');
+        self.UNIQUE.write(9, '\'The Gale\'');
+        self.UNIQUE.write(10, '\'The Hook\'');
+        self.UNIQUE.write(11, '\'The Maelstrom\'');
+        self.UNIQUE.write(12, '\'The Mouth\'');
+        self.UNIQUE.write(13, '\'The Muck\'');
+        self.UNIQUE.write(14, '\'The Shelf\'');
+        self.UNIQUE.write(15, '\'The Vale\'');
+        self.UNIQUE.write(16, '\'The Veldt\'');
 
         //init PEOPLE
         self.PEOPLE.write(0, 'Fate\'s');

@@ -1,3 +1,5 @@
+use core::option::OptionTrait;
+use core::traits::TryInto;
 use core::array::ArrayTrait;
 use cc_starknet::utils::bit_operation::BitOperationTrait;
 use cc_starknet::utils::random::random;
@@ -31,21 +33,49 @@ struct Room {
 
 // ------------------------------------------- Generator -------------------------------------------
 
-fn get_layout(seed: u256, size: u128) -> (Pack, u8) {
+fn generate_layout_and_entities(seed: u256, size: u128) -> (Pack, u8, Pack, Pack) {
     let mut settings: Settings = build_settings(seed, size);
+    let mut layout = PackTrait::new();
+    let mut points = PackTrait::new();
+    let mut doors = PackTrait::new();
+    let mut structure = 0;
 
-    if random_shift_counter_plus(ref settings, 0, 100) > 30 {
-        let structure = 0;
-        let (mut rooms, mut floor) = generate_rooms(ref settings);
+    if random_with_counter_plus(ref settings, 0, 100) > 30 {
+        let (rooms, floor) = generate_rooms(ref settings);
         let mut hallways = generate_hallways(ref settings, @rooms);
 
-        floor.add_bit(hallways);
-        (floor, structure)
+        layout = floor;
+        layout.add_bit(hallways);
+
+        // hallways does not take the bit which floor had mark already
+        hallways.subtract_bit(floor);
+
+        doors =
+            if hallways.count_bit() > 0 {
+                generate_points(ref settings, hallways, 40 / square_root(hallways.count_bit()))
+            } else {
+                PackTrait::new()
+            };
+        points = generate_points(ref settings, floor, 12 / square_root(settings.size - 6));
     } else {
-        let structure = 1;
+        structure = 1;
         let cavern: Pack = generate_cavern(ref settings);
-        (cavern, structure)
+        let mut num_tiles = cavern.count_bit();
+
+        layout = cavern;
+
+        // to avoid calculation error
+        if num_tiles <= 6 {
+            num_tiles = 7;
+        }
+
+        points = generate_points(ref settings, cavern, 12 / square_root(num_tiles - 6));
+        doors = generate_points(ref settings, cavern, 40 / square_root(num_tiles));
+
+        points.subtract_bit(doors);
     }
+
+    (layout, structure, points, doors)
 }
 
 fn generate_rooms(ref settings: Settings) -> (Array<Room>, Pack) {
@@ -61,6 +91,7 @@ fn generate_rooms(ref settings: Settings) -> (Array<Room>, Pack) {
     let mut num_rooms = random_with_counter_plus(
         ref settings, room_settings.min_rooms, room_settings.max_rooms
     );
+    let length_check = num_rooms;
 
     let mut safety_check: u128 = 256;
     loop {
@@ -82,8 +113,9 @@ fn generate_rooms(ref settings: Settings) -> (Array<Room>, Pack) {
         safety_check -= 1;
     };
 
+    // to achieve the fixed-length feature of memory arrays in Solidity
     loop {
-        if rooms.len().into() < num_rooms {
+        if rooms.len().into() < length_check {
             rooms.append(Room { x: 0, y: 0, width: 0, height: 0 });
         } else {
             break;
@@ -128,27 +160,32 @@ fn explore_in_cavern(
 }
 
 fn generate_cavern(ref settings: Settings) -> Pack {
-    let holes = settings.size / 2;
+    let mut holes = settings.size / 2;
     let mut cavern: Pack = PackTrait::new();
     let mut last_direction: u8 = 0;
     let mut next_direction: u8 = 0;
 
-    // TODO 
-    let mut i = 0;
-    loop {
-        if i == holes {
-            break;
-        }
+    start_exploring(ref settings, ref cavern, ref holes, ref last_direction, ref next_direction);
 
+    cavern
+}
+
+fn start_exploring(
+    ref settings: Settings,
+    ref cavern: Pack,
+    ref holes: u128,
+    ref last_direction: u8,
+    ref next_direction: u8
+) {
+    if holes > 0 {
         let x = random_shift_counter_plus(ref settings, 0, settings.size);
         let y = random_shift_counter_plus(ref settings, 0, settings.size);
 
         explore_in_cavern(ref settings, ref cavern, ref last_direction, ref next_direction, x, y);
 
-        i += 1;
-    };
-
-    cavern
+        holes -= 1;
+        start_exploring(ref settings, ref cavern, ref holes, ref last_direction, ref next_direction)
+    }
 }
 
 fn generate_hallways(ref settings: Settings, rooms: @Array<Room>) -> Pack {
@@ -283,52 +320,7 @@ fn get_doors(seed: u256, size: u128) -> (Pack, u128) {
     (doors, doors.count_bit())
 }
 
-fn generate_layout_and_entities(seed: u256, size: u128) -> (Pack, u8, Pack, Pack) {
-    let mut settings: Settings = build_settings(seed, size);
-
-    let mut layout = PackTrait::new();
-    let mut points = PackTrait::new();
-    let mut doors = PackTrait::new();
-    let mut structure = 0;
-
-    if random_with_counter_plus(ref settings, 0, 100) > 30 {
-        let (rooms, floor) = generate_rooms(ref settings);
-        let mut hallways = generate_hallways(ref settings, @rooms);
-
-        layout = floor;
-        layout.add_bit(hallways);
-
-        // hallways does not take the bit which floor had mark already
-        hallways.subtract_bit(floor);
-
-        doors =
-            if hallways.count_bit() > 0 {
-                generate_points(ref settings, hallways, 40 / square_root(hallways.count_bit()))
-            } else {
-                PackTrait::new()
-            };
-        points = generate_points(ref settings, floor, 12 / square_root(settings.size - 6));
-    } else {
-        structure = 1;
-        let cavern: Pack = generate_cavern(ref settings);
-        let mut num_tiles = cavern.count_bit();
-
-        layout = cavern;
-
-        // to avoid calculation error
-        if num_tiles <= 6 {
-            num_tiles = 7;
-        }
-
-        points = generate_points(ref settings, cavern, 12 / square_root(num_tiles - 6));
-        doors = generate_points(ref settings, cavern, 40 / square_root(num_tiles));
-
-        points.subtract_bit(doors);
-    }
-
-    (layout, structure, points, doors)
-}
-
+// to deprecate
 fn generate_entities(seed: u256, size: u128) -> (Pack, Pack) {
     let (layout, structure, points, doors) = generate_layout_and_entities(seed, size);
     (points, doors)
@@ -537,9 +529,7 @@ fn square_root(origin: u128) -> u128 {
 // ------------------------------------------- Test -------------------------------------------
 #[cfg(test)]
 mod test {
-    use super::{
-        PackTrait, Pack, square_root, get_layout, get_entities, generate_layout_and_entities
-    };
+    use super::{PackTrait, Pack, square_root, get_entities, generate_layout_and_entities};
 
     fn p<T, impl TPrint: PrintTrait<T>>(t: T) {
         t.print();
@@ -612,7 +602,7 @@ mod test {
             6335337818598560499429733180295617724328926230334923097623654911070136911834;
         let size = 17;
 
-        let (mut map, mut structure) = get_layout(seed, size);
+        let (mut map, mut structure, _, _) = generate_layout_and_entities(seed, size);
         // print_map(map, structure);
         assert(
             structure == 0
