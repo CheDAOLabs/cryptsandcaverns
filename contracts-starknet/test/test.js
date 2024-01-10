@@ -1,8 +1,6 @@
 import { Contract, RpcProvider, shortString } from "starknet";
-import { writeFile } from "fs";
-import { JsonRpcProvider, Contract as EthersContract, toBeHex } from "ethers";
-import { atob, Base64 } from 'js-base64';
-import readline from 'readline';
+import { JsonRpcProvider, Contract as EthersContract } from "ethers";
+import { atob } from 'js-base64';
 
 import abi from "./abi.json" assert { type: 'json' };
 
@@ -14,10 +12,13 @@ const main = async () => {
 
     let bug = [];
     let exceptions = [];
-    const badCC = [7162, 1807, 3032, 6421, 1135, 270, 7730, 5947, 4706];
+    const badCC = [7162, 1807, 3032, 6421, 1135, 270, 7730, 5947, 4706, 685];
 
     for (let i = 1; i <= 9000; i++) {
-        if (badCC.includes(i) || (i >= 7786 && i <= 8000)) {
+        if (// divided by 0 in solidity
+            badCC.includes(i)
+            // not mint yet
+            || (i >= 7786 && i <= 8000)) {
             continue;
         }
         await valid(i, ethContract, starknetContract, exceptions, bug);
