@@ -15,7 +15,7 @@ const main = async () => {
     // 'Panic due to DIVIDE_BY_ZERO(18)'
     const badCC = [270, 685, 1135, 1807, 3032, 4706, 5947, 6421, 7162, 7730, 8232];
 
-    for (let i = 4434; i <= 4434; i++) {
+    for (let i = 1; i <= 9000; i++) {
         if (// divided by 0 in solidity
             badCC.includes(i)
             // not mint yet
