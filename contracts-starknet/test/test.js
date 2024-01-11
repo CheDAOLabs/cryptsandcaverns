@@ -25,28 +25,37 @@ const main = async () => {
         await valid(i, ethContract, starknetContract, exceptions, bug);
     }
 
-    if (bug.length > 0) {
-        console.warn("bug: ", bug);
-    }
+    if (exceptions.length === 0 && bug.length === 0) {
+        console.log("Congratulation, all tests passed!");
+    } else {
 
-    if (exceptions.length > 0) {
-        console.error("exceptions: ", exceptions);
-    }
+        if (bug.length > 0) {
+            console.warn("bug: ", bug);
+        }
 
-    // double check
-    const checkList = bug.concat(exceptions);
-    bug = [];
-    exceptions = [];
-    for (let i of checkList) {
-        await valid(i, ethContract, starknetContract, exceptions, bug);
-    }
+        if (exceptions.length > 0) {
+            console.error("exceptions: ", exceptions);
+        }
 
-    if (bug.length > 0) {
-        console.warn("bug: ", bug);
-    }
+        // double check
+        const checkList = bug.concat(exceptions);
+        bug = [];
+        exceptions = [];
+        for (let i of checkList) {
+            await valid(i, ethContract, starknetContract, exceptions, bug);
+        }
 
-    if (exceptions.length > 0) {
-        console.error("exceptions: ", exceptions);
+        if (exceptions.length === 0 && bug.length === 0) {
+            console.log("Congratulation, all tests passed!");
+        } else {
+            if (bug.length > 0) {
+                console.warn("bug: ", bug);
+            }
+
+            if (exceptions.length > 0) {
+                console.error("exceptions: ", exceptions);
+            }
+        }
     }
 
 }
