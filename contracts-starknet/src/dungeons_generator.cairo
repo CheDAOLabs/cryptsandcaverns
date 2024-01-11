@@ -49,10 +49,11 @@ fn generate_layout_and_entities(seed: u256, size: u128) -> (Pack, u8, Pack, Pack
 
         // hallways does not take the bit which floor had mark already
         hallways.subtract_bit(floor);
+        let count = hallways.count_bit();
 
         doors =
-            if hallways.count_bit() > 0 {
-                generate_points(ref settings, hallways, 40 / square_root(hallways.count_bit()))
+            if count > 0 {
+                generate_points(ref settings, hallways, 40 / square_root(count))
             } else {
                 PackTrait::new()
             };
@@ -60,17 +61,17 @@ fn generate_layout_and_entities(seed: u256, size: u128) -> (Pack, u8, Pack, Pack
     } else {
         structure = 1;
         let cavern: Pack = generate_cavern(ref settings);
-        let mut num_tiles = cavern.count_bit();
+        let mut count = cavern.count_bit();
 
         layout = cavern;
 
         // to avoid calculation error
-        if num_tiles <= 6 {
-            num_tiles = 7;
+        if count <= 6 {
+            count = 7;
         }
 
-        points = generate_points(ref settings, cavern, 12 / square_root(num_tiles - 6));
-        doors = generate_points(ref settings, cavern, 40 / square_root(num_tiles));
+        points = generate_points(ref settings, cavern, 12 / square_root(count - 6));
+        doors = generate_points(ref settings, cavern, 40 / square_root(count));
 
         points.subtract_bit(doors);
     }
