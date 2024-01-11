@@ -117,7 +117,8 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
         dungeon_data.svg = atob(data.image.split(",")[1]);
 
         let layout = BigInt(await ethContract.getLayout(i)).toString(2);
-        let temp = layout.padStart(Math.ceil(dungeon_data.size * dungeon_data.size / 256) * 256, "0");
+        // for example 4434
+        let temp = layout.padStart(Math.max(Math.ceil(dungeon_data.size * dungeon_data.size / 256) * 256, Math.ceil(layout.length / 256) * 256), "0");
         dungeon_data.layout = temp.length <= 744 ? temp.padEnd(744, "0") : temp.slice(0, 744);
 
         let entity = await ethContract.getEntities(i);
