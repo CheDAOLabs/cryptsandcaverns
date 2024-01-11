@@ -12,15 +12,32 @@ const main = async () => {
 
     let bug = [];
     let exceptions = [];
-    const badCC = [7162, 1807, 3032, 6421, 1135, 270, 7730, 5947, 4706, 685];
+    // 'Panic due to DIVIDE_BY_ZERO(18)'
+    const badCC = [270, 685, 1135, 1807, 3032, 4706, 5947, 6421, 7162, 7730, 8232];
 
-    for (let i = 1; i <= 9000; i++) {
+    for (let i = 4434; i <= 4434; i++) {
         if (// divided by 0 in solidity
             badCC.includes(i)
             // not mint yet
             || (i >= 7786 && i <= 8000)) {
             continue;
         }
+        await valid(i, ethContract, starknetContract, exceptions, bug);
+    }
+
+    if (bug.length > 0) {
+        console.warn("bug: ", bug);
+    }
+
+    if (exceptions.length > 0) {
+        console.error("exceptions: ", exceptions);
+    }
+
+    // double check
+    const checkList = bug.concat(exceptions);
+    bug = [];
+    exceptions = [];
+    for (let i of checkList) {
         await valid(i, ethContract, starknetContract, exceptions, bug);
     }
 
@@ -100,8 +117,9 @@ async function valid(i, ethContract, starknetContract, exceptions, array) {
         dungeon_data.svg = atob(data.image.split(",")[1]);
 
         let layout = BigInt(await ethContract.getLayout(i)).toString(2);
-        let temp = layout.padStart(Math.ceil(layout.length / 256) * 256, "0");
+        let temp = layout.padStart(Math.ceil(dungeon_data.size * dungeon_data.size / 256) * 256, "0");
         dungeon_data.layout = temp.length <= 744 ? temp.padEnd(744, "0") : temp.slice(0, 744);
+
         let entity = await ethContract.getEntities(i);
         dungeon_data.doors = "".padEnd(744, "0");
         dungeon_data.points = "".padEnd(744, "0");
