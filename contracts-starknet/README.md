@@ -11,6 +11,12 @@ For more infomation, you can check [README](https://github.com/CheDAOLabs/crypts
 0x056cf8242380606b9bb081214e13928d9d0da30ed78a62ba22eba858bbae3aca
 ```
 
+## Goerli Address
+
+```shell
+0x00db63c75fb6b1b20badb7cb5dafd826c46a693d9ac437d87ed81bad7b6a01a4
+```
+
 # Starknet / Cairo
 
 ## Introduction
