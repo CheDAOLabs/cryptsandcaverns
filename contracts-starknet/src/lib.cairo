@@ -41,6 +41,7 @@ mod Dungeons {
     //
     // ------------------------------------------ Imports -------------------------------------------
 
+    use core::array::ArrayTrait;
     use openzeppelin::introspection::interface::ISRC5;
     use openzeppelin::token::erc721::interface::{
         IERC721, IERC721CamelOnly, IERC721Metadata, IERC721MetadataCamelOnly
@@ -184,7 +185,7 @@ mod Dungeons {
 
     // ------------------------------------------- Upgrade -------------------------------------------
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
         self.ownable.assert_only_owner();
         self.upgradeable._upgrade(new_class_hash);
@@ -194,7 +195,7 @@ mod Dungeons {
 
     // ---- enumerable -----
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl ERC721Enumerable of IERC721Enumerable<ContractState> {
         fn total_supply(self: @ContractState) -> u256 {
             self.last_mint.read().into()
@@ -212,7 +213,7 @@ mod Dungeons {
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl ERC721EnumerableCamelOnly of IERC721EnumerableCamelOnly<ContractState> {
         fn totalSupply(self: @ContractState) -> u256 {
             ERC721Enumerable::total_supply(self)
@@ -253,7 +254,7 @@ mod Dungeons {
 
     // ------ ERC721 -------
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     fn mint(ref self: ContractState) {
         // assert(self.last_mint.read() < 9000, 'Token sold out');
         // assert(!self.restricted.read(), 'Dungeon is restricted');
@@ -294,7 +295,7 @@ mod Dungeons {
         self.owned_token_index.write(token_id, balance_to);
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl ERC721Impl of IERC721<ContractState> {
         fn owner_of(self: @ContractState, token_id: u256) -> ContractAddress {
             if token_id <= 9000 {
@@ -327,14 +328,12 @@ mod Dungeons {
 
         fn approve(ref self: ContractState, to: ContractAddress, token_id: u256) {
             self.erc721.approve(to, token_id);
-            let owner = get_caller_address();
         }
 
         fn set_approval_for_all(
             ref self: ContractState, operator: ContractAddress, approved: bool
         ) {
             self.erc721.set_approval_for_all(operator, approved);
-            let owner = get_caller_address();
         }
 
         fn get_approved(self: @ContractState, token_id: u256) -> ContractAddress {
@@ -348,7 +347,7 @@ mod Dungeons {
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl ERC721MetadataImpl of IERC721Metadata<ContractState> {
         fn name(self: @ContractState) -> felt252 {
             self.erc721.name()
@@ -363,14 +362,14 @@ mod Dungeons {
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl ERC721MetadataCamelOnlyImpl of IERC721MetadataCamelOnly<ContractState> {
         fn tokenURI(self: @ContractState, tokenId: u256) -> felt252 {
             self.erc721.token_uri(tokenId)
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl ERC721CamelOnlyImpl of IERC721CamelOnly<ContractState> {
         fn ownerOf(self: @ContractState, tokenId: u256) -> ContractAddress {
             self.erc721.owner_of(tokenId)
@@ -411,19 +410,19 @@ mod Dungeons {
         }
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     fn supports_interface(self: @ContractState, interface_id: felt252) -> bool {
         self.src5.supports_interface(interface_id)
     }
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     fn supportsInterface(self: @ContractState, interfaceId: felt252) -> bool {
         supports_interface(self, interfaceId)
     }
 
     // ------ Dungeon -------
 
-    #[external(v0)]
+    #[abi(embed_v0)]
     impl CryptsAndCavernsTraitImpl of CryptsAndCavernsTrait<ContractState> {
         fn get_seed(self: @ContractState, token_id: u256) -> u256 {
             get_seed_in(self, token_id)
@@ -449,7 +448,7 @@ mod Dungeons {
         }
 
         fn get_name(self: @ContractState, token_id: u256) -> (Array<felt252>, felt252, u8) {
-            get_name_in(self, get_seed_in(self, token_id))
+            get_name_in(get_seed_in(self, token_id))
         }
 
         fn get_environment(self: @ContractState, token_id: u256) -> u8 {
@@ -507,7 +506,7 @@ mod Dungeons {
 
     fn generate_dungeon_in(self: @ContractState, seed: u256, size: u128) -> Dungeon {
         let (layout, structure, points, doors) = generate_layout_and_entities(seed, size);
-        let (mut dungeon_name, mut affinity, legendary) = get_name_in(self, seed);
+        let (mut dungeon_name, mut affinity, legendary) = get_name_in(seed);
 
         Dungeon {
             size: size.try_into().unwrap(),
@@ -561,7 +560,7 @@ mod Dungeons {
         }
     }
 
-    fn get_name_in(self: @ContractState, seed: u256) -> (Array<felt252>, felt252, u8) {
+    fn get_name_in(seed: u256) -> (Array<felt252>, felt252, u8) {
         // 'get_name'.print();
         let unique_seed = random(seed.left_shift(15), 0, 10000);
 
@@ -572,7 +571,7 @@ mod Dungeons {
         if (unique_seed < 17) {
             // Unique name
             legendary = 1;
-            name_parts.append(self.UNIQUE.read(unique_seed));
+            name_parts.append(get_unique(unique_seed));
         } else {
             let base_seed = random(seed.left_shift(16), 0, 38);
 
@@ -580,60 +579,459 @@ mod Dungeons {
                 // Person's Name + Base Land
                 let people_seed = random(seed.left_shift(23), 0, 12);
 
-                name_parts.append(self.PEOPLE.read(people_seed));
+                name_parts.append(get_people(people_seed));
                 name_parts.append(' ');
-                name_parts.append(self.LAND.read(base_seed));
+                name_parts.append(get_land(base_seed));
             } else if unique_seed <= 1800 {
                 // Prefix + Base Land + Suffix
                 let suffixs_random = random(seed.left_shift(27), 0, 59);
-                affinity = self.SUFFIXES.read(suffixs_random);
-                name_parts.append(self.PREFIX.read(random(seed.left_shift(42), 0, 29)));
+                affinity = get_suffixes(suffixs_random);
+                name_parts.append(get_prefix(random(seed.left_shift(42), 0, 29)));
                 name_parts.append(' ');
-                name_parts.append(self.LAND.read(base_seed));
+                name_parts.append(get_land(base_seed));
                 name_parts.append(' of ');
                 name_parts.append(affinity);
             } else if unique_seed <= 4000 {
                 // Base Land + Suffix
-                affinity = self.SUFFIXES.read(random(seed.left_shift(51), 0, 59));
-                name_parts.append(self.LAND.read(base_seed));
+                affinity = get_suffixes(random(seed.left_shift(51), 0, 59));
+                name_parts.append(get_land(base_seed));
                 name_parts.append(' of ');
                 name_parts.append(affinity);
             } else if unique_seed <= 6500 {
                 // Prefix + Base Land
-                name_parts.append(self.PREFIX.read(random(seed.left_shift(59), 0, 29)));
+                name_parts.append(get_prefix(random(seed.left_shift(59), 0, 29)));
                 name_parts.append(' ');
-                name_parts.append(self.LAND.read(base_seed));
+                name_parts.append(get_land(base_seed));
             } else {
                 // Base Land
-                name_parts.append(self.LAND.read(base_seed));
+                name_parts.append(get_land(base_seed));
             }
         };
         return (name_parts, affinity, legendary);
     }
 
+    fn get_prefix(input: u128) -> felt252 {
+        if input == 0 {
+            return 'Abyssal';
+        } else if input == 1 {
+            return 'Ancient';
+        } else if input == 2 {
+            return 'Bleak';
+        } else if input == 3 {
+            return 'Bright';
+        } else if input == 4 {
+            return 'Burning';
+        } else if input == 5 {
+            return 'Collapsed';
+        } else if input == 6 {
+            return 'Corrupted';
+        } else if input == 7 {
+            return 'Dark';
+        } else if input == 8 {
+            return 'Decrepid';
+        } else if input == 9 {
+            return 'Desolate';
+        } else if input == 10 {
+            return 'Dire';
+        } else if input == 11 {
+            return 'Divine';
+        } else if input == 12 {
+            return 'Emerald';
+        } else if input == 13 {
+            return 'Empyrean';
+        } else if input == 14 {
+            return 'Fallen';
+        } else if input == 15 {
+            return 'Glowing';
+        } else if input == 16 {
+            return 'Grim';
+        } else if input == 17 {
+            return 'Heaven\'s';
+        } else if input == 18 {
+            return 'Hidden';
+        } else if input == 19 {
+            return 'Holy';
+        } else if input == 20 {
+            return 'Howling';
+        } else if input == 21 {
+            return 'Inner';
+        } else if input == 22 {
+            return 'Morbid';
+        } else if input == 23 {
+            return 'Murky';
+        } else if input == 24 {
+            return 'Outer';
+        } else if input == 25 {
+            return 'Shimmering';
+        } else if input == 26 {
+            return 'Siren\'s';
+        } else if input == 27 {
+            return 'Sunken';
+        } else // if input == 28
+        {
+            return 'Whispering';
+        }
+    }
+
+    fn get_land(input: u128) -> felt252 {
+        if input == 0 {
+            return 'Canyon';
+        } else if input == 1 {
+            return 'Catacombs';
+        } else if input == 2 {
+            return 'Cavern';
+        } else if input == 3 {
+            return 'Chamber';
+        } else if input == 4 {
+            return 'Cloister';
+        } else if input == 5 {
+            return 'Crypt';
+        } else if input == 6 {
+            return 'Den';
+        } else if input == 7 {
+            return 'Dunes';
+        } else if input == 8 {
+            return 'Field';
+        } else if input == 9 {
+            return 'Forest';
+        } else if input == 10 {
+            return 'Glade';
+        } else if input == 11 {
+            return 'Gorge';
+        } else if input == 12 {
+            return 'Graveyard';
+        } else if input == 13 {
+            return 'Grotto';
+        } else if input == 14 {
+            return 'Grove';
+        } else if input == 15 {
+            return 'Halls';
+        } else if input == 16 {
+            return 'Keep';
+        } else if input == 17 {
+            return 'Lair';
+        } else if input == 18 {
+            return 'Labyrinth';
+        } else if input == 19 {
+            return 'Landing';
+        } else if input == 20 {
+            return 'Maze';
+        } else if input == 21 {
+            return 'Mountain';
+        } else if input == 22 {
+            return 'Necropolis';
+        } else if input == 23 {
+            return 'Oasis';
+        } else if input == 24 {
+            return 'Passage';
+        } else if input == 25 {
+            return 'Peak';
+        } else if input == 26 {
+            return 'Prison';
+        } else if input == 27 {
+            return 'Scar';
+        } else if input == 28 {
+            return 'Sewers';
+        } else if input == 29 {
+            return 'Shrine';
+        } else if input == 30 {
+            return 'Sound';
+        } else if input == 31 {
+            return 'Steppes';
+        } else if input == 32 {
+            return 'Temple';
+        } else if input == 33 {
+            return 'Tundra';
+        } else if input == 34 {
+            return 'Tunnel';
+        } else if input == 35 {
+            return 'Valley';
+        } else if input == 36 {
+            return 'Waterfall';
+        } else // if input ==37
+        {
+            return 'Woods';
+        }
+    }
+
+    fn get_suffixes(input: u128) -> felt252 {
+        if input == 0 {
+            return 'Agony';
+        } else if input == 1 {
+            return 'Anger';
+        } else if input == 2 {
+            return 'Blight';
+        } else if input == 3 {
+            return 'Bone';
+        } else if input == 4 {
+            return 'Brilliance';
+        } else if input == 5 {
+            return 'Brimstone';
+        } else if input == 6 {
+            return 'Corruption';
+        } else if input == 7 {
+            return 'Despair';
+        } else if input == 8 {
+            return 'Dread';
+        } else if input == 9 {
+            return 'Dusk';
+        } else if input == 10 {
+            return 'Enlightenment';
+        } else if input == 11 {
+            return 'Fury';
+        } else if input == 12 {
+            return 'Fire';
+        } else if input == 13 {
+            return 'Giants';
+        } else if input == 14 {
+            return 'Gloom';
+        } else if input == 15 {
+            return 'Hate';
+        } else if input == 16 {
+            return 'Havoc';
+        } else if input == 17 {
+            return 'Honour';
+        } else if input == 18 {
+            return 'Horror';
+        } else if input == 19 {
+            return 'Loathing';
+        } else if input == 20 {
+            return 'Mire';
+        } else if input == 21 {
+            return 'Mist';
+        } else if input == 22 {
+            return 'Needles';
+        } else if input == 23 {
+            return 'Pain';
+        } else if input == 24 {
+            return 'Pandemonium';
+        } else if input == 25 {
+            return 'Pine';
+        } else if input == 26 {
+            return 'Rage';
+        } else if input == 27 {
+            return 'Rapture';
+        } else if input == 28 {
+            return 'Sand';
+        } else if input == 29 {
+            return 'Sorrow';
+        } else if input == 30 {
+            return 'the Apocalypse';
+        } else if input == 31 {
+            return 'the Beast';
+        } else if input == 32 {
+            return 'the Behemoth';
+        } else if input == 33 {
+            return 'the Brood';
+        } else if input == 34 {
+            return 'the Fox';
+        } else if input == 35 {
+            return 'the Gale';
+        } else if input == 36 {
+            return 'the Golem';
+        } else if input == 37 {
+            return 'the Kraken';
+        } else if input == 38 {
+            return 'the Leech';
+        } else if input == 39 {
+            return 'the Moon';
+        } else if input == 40 {
+            return 'the Phoenix';
+        } else if input == 41 {
+            return 'the Plague';
+        } else if input == 42 {
+            return 'the Root';
+        } else if input == 43 {
+            return 'the Song';
+        } else if input == 44 {
+            return 'the Stars';
+        } else if input == 45 {
+            return 'the Storm';
+        } else if input == 46 {
+            return 'the Sun';
+        } else if input == 47 {
+            return 'the Tear';
+        } else if input == 48 {
+            return 'the Titans';
+        } else if input == 49 {
+            return 'the Twins';
+        } else if input == 50 {
+            return 'the Willows';
+        } else if input == 51 {
+            return 'the Wisp';
+        } else if input == 52 {
+            return 'the Viper';
+        } else if input == 53 {
+            return 'the Vortex';
+        } else if input == 54 {
+            return 'Torment';
+        } else if input == 55 {
+            return 'Vengeance';
+        } else if input == 56 {
+            return 'Victory';
+        } else if input == 57 {
+            return 'Woe';
+        } else if input == 58 {
+            return 'Wisdom';
+        } else // if input == 59
+        {
+            return 'Wrath';
+        }
+    }
+
+    fn get_unique(input: u128) -> felt252 {
+        if input == 0 {
+            return '\'Armageddon\'';
+        } else if input == 1 {
+            return '\'Mind\'s Eye\'';
+        } else if input == 2 {
+            return '\'Nostromo\'';
+        } else if input == 3 {
+            return '\'Oblivion\'';
+        } else if input == 4 {
+            return '\'The Chasm\'';
+        } else if input == 5 {
+            return '\'The Crypt\'';
+        } else if input == 6 {
+            return '\'The Depths\'';
+        } else if input == 7 {
+            return '\'The End\'';
+        } else if input == 8 {
+            return '\'The Expanse\'';
+        } else if input == 9 {
+            return '\'The Gale\'';
+        } else if input == 10 {
+            return '\'The Hook\'';
+        } else if input == 11 {
+            return '\'The Maelstrom\'';
+        } else if input == 12 {
+            return '\'The Mouth\'';
+        } else if input == 13 {
+            return '\'The Muck\'';
+        } else if input == 14 {
+            return '\'The Shelf\'';
+        } else if input == 15 {
+            return '\'The Vale\'';
+        } else //  if input == 16
+        {
+            return '\'The Veldt\'';
+        }
+    }
+
+    fn get_people(input: u128) -> felt252 {
+        if input == 0 {
+            return 'Fate\'s';
+        } else if input == 1 {
+            return 'Fohd\'s';
+        } else if input == 2 {
+            return 'Gremp\'s';
+        } else if input == 3 {
+            return 'Hate\'s';
+        } else if input == 4 {
+            return 'Kali\'s';
+        } else if input == 5 {
+            return 'Kiv\'s';
+        } else if input == 6 {
+            return 'Light\'s';
+        } else if input == 7 {
+            return 'Shub\'s';
+        } else if input == 8 {
+            return 'Sol\'s';
+        } else if input == 9 {
+            return 'Tish\'s';
+        } else if input == 10 {
+            return 'Viper\'s';
+        } else // if input == 11
+        {
+            return 'Woe\'s';
+        }
+    }
+
+    fn get_environment_name(input: u8) -> felt252 {
+        if input == 0 {
+            return 'Desert Oasis';
+        } else if input == 1 {
+            return 'Stone Temple';
+        } else if input == 2 {
+            return 'Forest Ruins';
+        } else if input == 3 {
+            return 'Mountain Deep';
+        } else if input == 4 {
+            return 'Underwater Keep';
+        } else // if input == 5
+        {
+            return 'Embers Glow';
+        }
+    }
+
+    fn get_color(input: u8) -> felt252 {
+        if input == 0 {
+            return 'F3D899';
+        } else if input == 1 {
+            return '160F09';
+        } else if input == 2 {
+            return 'FAAA00';
+        } else if input == 3 {
+            return '00A29D';
+        } else if input == 4 {
+            return '967E67';
+        } else if input == 5 {
+            return 'F3D899';
+        } else if input == 6 {
+            return '3C2A1A';
+        } else if input == 7 {
+            return '006669';
+        } else if input == 8 {
+            return '2F590E';
+        } else if input == 9 {
+            return 'A98C00';
+        } else if input == 10 {
+            return '802F1A';
+        } else if input == 11 {
+            return 'C55300';
+        } else if input == 12 {
+            return '36230F';
+        } else if input == 13 {
+            return '744936';
+        } else if input == 14 {
+            return '802F1A';
+        } else if input == 15 {
+            return 'FFA800';
+        } else if input == 16 {
+            return '006669';
+        } else if input == 17 {
+            return '004238';
+        } else if input == 18 {
+            return '967E67';
+        } else if input == 19 {
+            return 'F9B569';
+        } else if input == 20 {
+            return '340D07';
+        } else if input == 21 {
+            return '5D0503';
+        } else if input == 22 {
+            return 'B75700';
+        } else //  if input == 23
+        {
+            return 'FF1800';
+        }
+    }
+
     // --------------------------------------------- Render --------------------------------------------
 
     fn append_number_ascii(mut parts: Array<felt252>, mut num: u128) -> Array<felt252> {
-        let part: Array<felt252> = append_number(ArrayTrait::<felt252>::new(), num);
-        let mut length = part.len();
-        loop {
-            if length == 0 {
-                break;
-            }
-            parts.append(*part[length - 1]);
-            length -= 1;
-        };
+        parts.append(append_number(1, 10, num, 0));
         parts
     }
 
-    fn append_number(mut part: Array<felt252>, mut num: u128) -> Array<felt252> {
+    fn append_number(count: u8, ten: u128, mut num: u128, mut result: u128) -> felt252 {
         if num != 0 {
-            let temp: u8 = (num % 10).try_into().unwrap();
-            part.append((temp + 48).into());
+            let temp: u128 = (num % ten).try_into().unwrap();
             num /= 10;
-            append_number(part, num)
+            result += (temp + 48) * 16 * count.into();
+            append_number(count + 1, ten * 10, num, result)
         } else {
-            part
+            result.into()
         }
     }
 
@@ -651,7 +1049,7 @@ mod Dungeons {
         parts.append(' transform-origin="center">');
         parts.append('<rect width="100%"');
         parts.append(' height="100%" fill="#');
-        parts.append(self.colors.read(dungeon.environment * 4));
+        parts.append(get_color(dungeon.environment * 4));
         parts.append('" />');
 
         parts = draw_name_plate(parts, dungeon.dungeon_name);
@@ -706,7 +1104,7 @@ mod Dungeons {
                             helper.start + (helper.last_start / dungeon.size.into()) * helper.pixel,
                             (helper.counter - helper.last_start) * helper.pixel,
                             helper.pixel,
-                            self.colors.read(dungeon.environment * 4 + 1)
+                            get_color(dungeon.environment * 4 + 1)
                         );
                 } else if !layout.get_bit(helper.counter)
                     && helper.counter > 0
@@ -727,7 +1125,7 @@ mod Dungeons {
                         helper.start + (helper.last_start / dungeon.size.into()) * helper.pixel,
                         (helper.counter - helper.last_start) * helper.pixel,
                         helper.pixel,
-                        self.colors.read(dungeon.environment * 4 + 1)
+                        get_color(dungeon.environment * 4 + 1)
                     );
             }
 
@@ -791,7 +1189,7 @@ mod Dungeons {
             let x = helper.start + (*x[i] % dungeon.size).into() * helper.pixel;
             let y = helper.start + (*y[i]).into() * helper.pixel;
             let color_index: u8 = dungeon.environment * 4 + 2 + *entity_type[i];
-            let color: felt252 = self.colors.read(color_index);
+            let color: felt252 = get_color(color_index);
             parts = draw_tile(parts, x, y, helper.pixel, helper.pixel, color);
 
             i += 1;
@@ -849,7 +1247,7 @@ mod Dungeons {
         let pop = to_add.pop_front();
 
         if (match pop {
-            Option::Some(v) => true,
+            Option::Some(_) => true,
             Option::None => false
         }) {
             parts.append(*pop.unwrap());
@@ -889,7 +1287,7 @@ mod Dungeons {
         json.append(dungeon.size.into());
         json.append('"}, {"trait_type": ');
         json.append('"environment", "value": "');
-        json.append(self.environmentName.read(dungeon.environment));
+        json.append(get_environment_name(dungeon.environment));
         json.append('"}, {"trait_type": ');
         json.append('"doors", "value": "');
         json.append(doors.into());
@@ -936,212 +1334,22 @@ mod Dungeons {
         self.last_mint.write(9000);
 
         self.ownable.initializer(owner);
+    }
+}
 
-        // --------------- seeder ---------------
-        //init PREFIX
-        self.PREFIX.write(0, 'Abyssal');
-        self.PREFIX.write(1, 'Ancient');
-        self.PREFIX.write(2, 'Bleak');
-        self.PREFIX.write(3, 'Bright');
-        self.PREFIX.write(4, 'Burning');
-        self.PREFIX.write(5, 'Collapsed');
-        self.PREFIX.write(6, 'Corrupted');
-        self.PREFIX.write(7, 'Dark');
-        self.PREFIX.write(8, 'Decrepid');
-        self.PREFIX.write(9, 'Desolate');
-        self.PREFIX.write(10, 'Dire');
-        self.PREFIX.write(11, 'Divine');
-        self.PREFIX.write(12, 'Emerald');
-        self.PREFIX.write(13, 'Empyrean');
-        self.PREFIX.write(14, 'Fallen');
-        self.PREFIX.write(15, 'Glowing');
-        self.PREFIX.write(16, 'Grim');
-        self.PREFIX.write(17, 'Heaven\'s');
-        self.PREFIX.write(18, 'Hidden');
-        self.PREFIX.write(19, 'Holy');
-        self.PREFIX.write(20, 'Howling');
-        self.PREFIX.write(21, 'Inner');
-        self.PREFIX.write(22, 'Morbid');
-        self.PREFIX.write(23, 'Murky');
-        self.PREFIX.write(24, 'Outer');
-        self.PREFIX.write(25, 'Shimmering');
-        self.PREFIX.write(26, 'Siren\'s');
-        self.PREFIX.write(27, 'Sunken');
-        self.PREFIX.write(28, 'Whispering');
+#[cfg(test)]
+mod test {
+    use super::Dungeons::{generate_layout_and_entities, generate_dungeon_in, draw, get_size_in};
+    #[test]
+    fn test() {
+        let seed = 0x89d73b3f3ae57516591d1b8fe599f24a52996dac09b0dc13f65b14a45f78bc75;
+        generate_layout_and_entities(seed, get_size_in(seed));
+    }
 
-        //init LAND
-        self.LAND.write(0, 'Canyon');
-        self.LAND.write(1, 'Catacombs');
-        self.LAND.write(2, 'Cavern');
-        self.LAND.write(3, 'Chamber');
-        self.LAND.write(4, 'Cloister');
-        self.LAND.write(5, 'Crypt');
-        self.LAND.write(6, 'Den');
-        self.LAND.write(7, 'Dunes');
-        self.LAND.write(8, 'Field');
-        self.LAND.write(9, 'Forest');
-        self.LAND.write(10, 'Glade');
-        self.LAND.write(11, 'Gorge');
-        self.LAND.write(12, 'Graveyard');
-        self.LAND.write(13, 'Grotto');
-        self.LAND.write(14, 'Grove');
-        self.LAND.write(15, 'Halls');
-        self.LAND.write(16, 'Keep');
-        self.LAND.write(17, 'Lair');
-        self.LAND.write(18, 'Labyrinth');
-        self.LAND.write(19, 'Landing');
-        self.LAND.write(20, 'Maze');
-        self.LAND.write(21, 'Mountain');
-        self.LAND.write(22, 'Necropolis');
-        self.LAND.write(23, 'Oasis');
-        self.LAND.write(24, 'Passage');
-        self.LAND.write(25, 'Peak');
-        self.LAND.write(26, 'Prison');
-        self.LAND.write(27, 'Scar');
-        self.LAND.write(28, 'Sewers');
-        self.LAND.write(29, 'Shrine');
-        self.LAND.write(30, 'Sound');
-        self.LAND.write(31, 'Steppes');
-        self.LAND.write(32, 'Temple');
-        self.LAND.write(33, 'Tundra');
-        self.LAND.write(34, 'Tunnel');
-        self.LAND.write(35, 'Valley');
-        self.LAND.write(36, 'Waterfall');
-        self.LAND.write(37, 'Woods');
-
-        //init SUFFIXES
-        self.SUFFIXES.write(0, 'Agony');
-        self.SUFFIXES.write(1, 'Anger');
-        self.SUFFIXES.write(2, 'Blight');
-        self.SUFFIXES.write(3, 'Bone');
-        self.SUFFIXES.write(4, 'Brilliance');
-        self.SUFFIXES.write(5, 'Brimstone');
-        self.SUFFIXES.write(6, 'Corruption');
-        self.SUFFIXES.write(7, 'Despair');
-        self.SUFFIXES.write(8, 'Dread');
-        self.SUFFIXES.write(9, 'Dusk');
-        self.SUFFIXES.write(10, 'Enlightenment');
-        self.SUFFIXES.write(11, 'Fury');
-        self.SUFFIXES.write(12, 'Fire');
-        self.SUFFIXES.write(13, 'Giants');
-        self.SUFFIXES.write(14, 'Gloom');
-        self.SUFFIXES.write(15, 'Hate');
-        self.SUFFIXES.write(16, 'Havoc');
-        self.SUFFIXES.write(17, 'Honour');
-        self.SUFFIXES.write(18, 'Horror');
-        self.SUFFIXES.write(19, 'Loathing');
-        self.SUFFIXES.write(20, 'Mire');
-        self.SUFFIXES.write(21, 'Mist');
-        self.SUFFIXES.write(22, 'Needles');
-        self.SUFFIXES.write(23, 'Pain');
-        self.SUFFIXES.write(24, 'Pandemonium');
-        self.SUFFIXES.write(25, 'Pine');
-        self.SUFFIXES.write(26, 'Rage');
-        self.SUFFIXES.write(27, 'Rapture');
-        self.SUFFIXES.write(28, 'Sand');
-        self.SUFFIXES.write(29, 'Sorrow');
-        self.SUFFIXES.write(30, 'the Apocalypse');
-        self.SUFFIXES.write(31, 'the Beast');
-        self.SUFFIXES.write(32, 'the Behemoth');
-        self.SUFFIXES.write(33, 'the Brood');
-        self.SUFFIXES.write(34, 'the Fox');
-        self.SUFFIXES.write(35, 'the Gale');
-        self.SUFFIXES.write(36, 'the Golem');
-        self.SUFFIXES.write(37, 'the Kraken');
-        self.SUFFIXES.write(38, 'the Leech');
-        self.SUFFIXES.write(39, 'the Moon');
-        self.SUFFIXES.write(40, 'the Phoenix');
-        self.SUFFIXES.write(41, 'the Plague');
-        self.SUFFIXES.write(42, 'the Root');
-        self.SUFFIXES.write(43, 'the Song');
-        self.SUFFIXES.write(44, 'the Stars');
-        self.SUFFIXES.write(45, 'the Storm');
-        self.SUFFIXES.write(46, 'the Sun');
-        self.SUFFIXES.write(47, 'the Tear');
-        self.SUFFIXES.write(48, 'the Titans');
-        self.SUFFIXES.write(49, 'the Twins');
-        self.SUFFIXES.write(50, 'the Willows');
-        self.SUFFIXES.write(51, 'the Wisp');
-        self.SUFFIXES.write(52, 'the Viper');
-        self.SUFFIXES.write(53, 'the Vortex');
-        self.SUFFIXES.write(54, 'Torment');
-        self.SUFFIXES.write(55, 'Vengeance');
-        self.SUFFIXES.write(56, 'Victory');
-        self.SUFFIXES.write(57, 'Woe');
-        self.SUFFIXES.write(58, 'Wisdom');
-        self.SUFFIXES.write(59, 'Wrath');
-
-        //init UNIQUE
-        self.UNIQUE.write(0, '\'Armageddon\'');
-        self.UNIQUE.write(1, '\'Mind\'s Eye\'');
-        self.UNIQUE.write(2, '\'Nostromo\'');
-        self.UNIQUE.write(3, '\'Oblivion\'');
-        self.UNIQUE.write(4, '\'The Chasm\'');
-        self.UNIQUE.write(5, '\'The Crypt\'');
-        self.UNIQUE.write(6, '\'The Depths\'');
-        self.UNIQUE.write(7, '\'The End\'');
-        self.UNIQUE.write(8, '\'The Expanse\'');
-        self.UNIQUE.write(9, '\'The Gale\'');
-        self.UNIQUE.write(10, '\'The Hook\'');
-        self.UNIQUE.write(11, '\'The Maelstrom\'');
-        self.UNIQUE.write(12, '\'The Mouth\'');
-        self.UNIQUE.write(13, '\'The Muck\'');
-        self.UNIQUE.write(14, '\'The Shelf\'');
-        self.UNIQUE.write(15, '\'The Vale\'');
-        self.UNIQUE.write(16, '\'The Veldt\'');
-
-        //init PEOPLE
-        self.PEOPLE.write(0, 'Fate\'s');
-        self.PEOPLE.write(1, 'Fohd\'s');
-        self.PEOPLE.write(2, 'Gremp\'s');
-        self.PEOPLE.write(3, 'Hate\'s');
-        self.PEOPLE.write(4, 'Kali\'s');
-        self.PEOPLE.write(5, 'Kiv\'s');
-        self.PEOPLE.write(6, 'Light\'s');
-        self.PEOPLE.write(7, 'Shub\'s');
-        self.PEOPLE.write(8, 'Sol\'s');
-        self.PEOPLE.write(9, 'Tish\'s');
-        self.PEOPLE.write(10, 'Viper\'s');
-        self.PEOPLE.write(11, 'Woe\'s');
-
-        // --------------- render --------------
-        // Init colors
-        // Desert
-        self.colors.write(0, 'F3D899');
-        self.colors.write(1, '160F09');
-        self.colors.write(2, 'FAAA00');
-        self.colors.write(3, '00A29D');
-        // Stone Temple
-        self.colors.write(4, '967E67');
-        self.colors.write(5, 'F3D899');
-        self.colors.write(6, '3C2A1A');
-        self.colors.write(7, '006669');
-        // Forest Ruins
-        self.colors.write(8, '2F590E');
-        self.colors.write(9, 'A98C00');
-        self.colors.write(10, '802F1A');
-        self.colors.write(11, 'C55300');
-        // Mountain Deep
-        self.colors.write(12, '36230F');
-        self.colors.write(13, '744936');
-        self.colors.write(14, '802F1A');
-        self.colors.write(15, 'FFA800');
-        // Underwater Keep
-        self.colors.write(16, '006669');
-        self.colors.write(17, '004238');
-        self.colors.write(18, '967E67');
-        self.colors.write(19, 'F9B569');
-        // Ember"s Glow
-        self.colors.write(20, '340D07');
-        self.colors.write(21, '5D0503');
-        self.colors.write(22, 'B75700');
-        self.colors.write(23, 'FF1800');
-        // Init environmentName
-        self.environmentName.write(0, 'Desert Oasis');
-        self.environmentName.write(1, 'Stone Temple');
-        self.environmentName.write(2, 'Forest Ruins');
-        self.environmentName.write(3, 'Mountain Deep');
-        self.environmentName.write(4, 'Underwater Keep');
-        self.environmentName.write(5, 'Embers Glow');
+    #[test]
+    fn test1() {
+        let state = super::Dungeons::unsafe_new_contract_state();
+        let seed = 0x89d73b3f3ae57516591d1b8fe599f24a52996dac09b0dc13f65b14a45f78bc75;
+        draw(@state, generate_dungeon_in(@state, seed, get_size_in(seed)));
     }
 }

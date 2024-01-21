@@ -19,7 +19,7 @@ impl BitOperation of BitOperationTrait {
         if count > 255 {
             return 0;
         }
-        let (result, overflow) = integer::u256_overflow_mul(self, get_pow(count));
+        let (result, _) = integer::u256_overflow_mul(self, get_pow(count));
         result
     }
 

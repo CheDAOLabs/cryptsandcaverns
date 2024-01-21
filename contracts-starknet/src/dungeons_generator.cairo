@@ -312,18 +312,18 @@ fn parse_entities(size: u128, points: Pack, doors: Pack) -> (Array<u8>, Array<u8
 }
 
 fn get_points(seed: u256, size: u128) -> (Pack, u128) {
-    let (points, doors) = generate_entities(seed, size);
+    let (points, _) = generate_entities(seed, size);
     (points, points.count_bit())
 }
 
 fn get_doors(seed: u256, size: u128) -> (Pack, u128) {
-    let (points, doors) = generate_entities(seed, size);
+    let (_, doors) = generate_entities(seed, size);
     (doors, doors.count_bit())
 }
 
 // to deprecate
 fn generate_entities(seed: u256, size: u128) -> (Pack, Pack) {
-    let (layout, structure, points, doors) = generate_layout_and_entities(seed, size);
+    let (_, _, points, doors) = generate_layout_and_entities(seed, size);
     (points, doors)
 }
 
@@ -579,7 +579,7 @@ mod test {
         let size = 20;
 
         // let (mut map, mut structure) = get_layout(seed, size);
-        let (map, structure, points, doors) = generate_layout_and_entities(seed, size);
+        let (map, structure, _, _) = generate_layout_and_entities(seed, size);
         // print_map(map, structure);
         assert(
             structure == 1
@@ -613,7 +613,7 @@ mod test {
             'room error'
         );
         let (x_array, y_array, t_array) = get_entities(seed, size);
-    // print_array(@x_array, @y_array, @t_array);
+        print_array(@x_array, @y_array, @t_array);
     }
 
     fn print_map(map: Pack, structure: u8) {

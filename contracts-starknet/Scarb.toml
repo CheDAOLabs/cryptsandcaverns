@@ -1,10 +1,10 @@
 [package]
 name = "cc_starknet"
 version = "0.1.2"
-cairo-version = "2.4.3"
+cairo-version = "2.4.1"
 
 [dependencies]
-starknet = ">=2.3.0"
+starknet = "2.4.1"
 openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.8.0" }
 components = { git = "https://github.com/orangeryang/cairo-component.git" }
 
