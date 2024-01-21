@@ -1019,19 +1019,27 @@ mod Dungeons {
 
     // --------------------------------------------- Render --------------------------------------------
 
-    fn append_number_ascii(mut parts: Array<felt252>, mut num: u128) -> Array<felt252> {
-        parts.append(append_number(1, 10, num, 0));
+       fn append_number_ascii(mut parts: Array<felt252>, mut num: u128) -> Array<felt252> {
+        let part: Array<felt252> = append_number(ArrayTrait::<felt252>::new(), num);
+        let mut length = part.len();
+        loop {
+            if length == 0 {
+                break;
+            }
+            parts.append(*part[length - 1]);
+            length -= 1;
+        };
         parts
     }
 
-    fn append_number(count: u8, ten: u128, mut num: u128, mut result: u128) -> felt252 {
+    fn append_number(mut part: Array<felt252>, mut num: u128) -> Array<felt252> {
         if num != 0 {
-            let temp: u128 = (num % ten).try_into().unwrap();
+            let temp: u8 = (num % 10).try_into().unwrap();
+            part.append((temp + 48).into());
             num /= 10;
-            result += (temp + 48) * 16 * count.into();
-            append_number(count + 1, ten * 10, num, result)
+            append_number(part, num)
         } else {
-            result.into()
+            part
         }
     }
 
