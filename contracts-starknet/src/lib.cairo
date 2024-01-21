@@ -966,54 +966,54 @@ mod Dungeons {
 
     fn get_color(input: u8) -> felt252 {
         if input == 0 {
-            return 'F3D899';
+            return 'F3D899"/>';
         } else if input == 1 {
-            return '160F09';
+            return '160F09"/>';
         } else if input == 2 {
-            return 'FAAA00';
+            return 'FAAA00"/>';
         } else if input == 3 {
-            return '00A29D';
+            return '00A29D"/>';
         } else if input == 4 {
-            return '967E67';
+            return '967E67"/>';
         } else if input == 5 {
-            return 'F3D899';
+            return 'F3D899"/>';
         } else if input == 6 {
-            return '3C2A1A';
+            return '3C2A1A"/>';
         } else if input == 7 {
-            return '006669';
+            return '006669"/>';
         } else if input == 8 {
-            return '2F590E';
+            return '2F590E"/>';
         } else if input == 9 {
-            return 'A98C00';
+            return 'A98C00"/>';
         } else if input == 10 {
-            return '802F1A';
+            return '802F1A"/>';
         } else if input == 11 {
-            return 'C55300';
+            return 'C55300"/>';
         } else if input == 12 {
-            return '36230F';
+            return '36230F"/>';
         } else if input == 13 {
-            return '744936';
+            return '744936"/>';
         } else if input == 14 {
-            return '802F1A';
+            return '802F1A"/>';
         } else if input == 15 {
-            return 'FFA800';
+            return 'FFA800"/>';
         } else if input == 16 {
-            return '006669';
+            return '006669"/>';
         } else if input == 17 {
-            return '004238';
+            return '004238"/>';
         } else if input == 18 {
-            return '967E67';
+            return '967E67"/>';
         } else if input == 19 {
-            return 'F9B569';
+            return 'F9B569"/>';
         } else if input == 20 {
-            return '340D07';
+            return '340D07"/>';
         } else if input == 21 {
-            return '5D0503';
+            return '5D0503"/>';
         } else if input == 22 {
-            return 'B75700';
+            return 'B75700"/>';
         } else //  if input == 23
         {
-            return 'FF1800';
+            return 'FF1800"/>';
         }
     }
 
@@ -1050,15 +1050,15 @@ mod Dungeons {
         let mut parts: Array<felt252> = ArrayTrait::new();
         parts.append('<svg xmlns=');
         parts.append('"http://www.w3.org/2000/svg"');
-        parts.append(' preserveAspectRatio=');
+        parts.append('preserveAspectRatio=');
         parts.append('"xMinYMin meet"');
-        parts.append(' viewBox="0 0 500 500"');
-        parts.append(' shape-rendering="crispEdges"');
-        parts.append(' transform-origin="center">');
+        parts.append('viewBox="0 0 500 500"');
+        parts.append('shape-rendering="crispEdges"');
+        parts.append('transform-origin="center">');
         parts.append('<rect width="100%"');
-        parts.append(' height="100%" fill="#');
+        parts.append('height="100%"fill="#');
         parts.append(get_color(dungeon.environment * 4));
-        parts.append('" />');
+
 
         parts = draw_name_plate(parts, dungeon.dungeon_name);
         let (start, pixel) = get_width(dungeon.size);
@@ -1161,18 +1161,17 @@ mod Dungeons {
         parts.append('<g transform="scale ');
         parts.append('(5 5)"><rect x="');
         parts = append_number_ascii(parts, (100 - ((name_length + 3) * multiplier)) / 2);
-        parts.append('" y="-1" width="');
+        parts.append('"y="-1"width="');
         parts = append_number_ascii(parts, (name_length + 3) * multiplier);
-        parts.append('" height="9" stroke-width="0.3"');
-        parts.append(' stroke="black" fill="#FFA800"');
-        parts.append(' />');
+        parts.append('"height="9"stroke-width="0.3"');
+        parts.append('stroke="black"fill="#FFA800"/>');
 
-        parts.append('<text x="50" y="5.5" width="');
+        parts.append('<text x="50"y="5.5"width="');
         parts = append_number_ascii(parts, name_length * 3);
-        parts.append('" font-family="monospace" ');
+        parts.append('"font-family="monospace"');
         parts.append('font-size="');
         parts = append_number_ascii(parts, font_size);
-        parts.append('" text-anchor="middle">');
+        parts.append('"text-anchor="middle">');
         parts = append(parts, name);
         parts.append('</text></g>');
 
@@ -1210,15 +1209,14 @@ mod Dungeons {
     ) -> Array<felt252> {
         tile.append('<rect x="');
         tile = append_number_ascii(tile, x);
-        tile.append('" y="');
+        tile.append('"y="');
         tile = append_number_ascii(tile, y);
-        tile.append('" width="');
+        tile.append('"width="');
         tile = append_number_ascii(tile, width);
-        tile.append('" height="');
+        tile.append('"height="');
         tile = append_number_ascii(tile, pixel);
-        tile.append('" fill="#');
+        tile.append('"fill="#');
         tile.append(color);
-        tile.append('" />');
 
         tile
     }
