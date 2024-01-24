@@ -118,3 +118,5 @@ dist
 .tern-port
 
 .idea
+
+scarb.lock
