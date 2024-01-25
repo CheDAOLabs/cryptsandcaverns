@@ -433,14 +433,14 @@ mod Dungeons {
         }
 
         fn get_svg(self: @ContractState, token_id: u256) -> Array<felt252> {
-            draw(self, self.generate_dungeon(token_id))
+            draw(self.generate_dungeon(token_id))
         }
 
         // we recommend to use this function
         fn generate_dungeon(self: @ContractState, token_id: u256) -> Dungeon {
             let seed = get_seed_in(self, token_id);
             let size = get_size_in(seed);
-            generate_dungeon_in(self, seed, size)
+            generate_dungeon_in(seed, size)
         }
 
         fn get_size(self: @ContractState, token_id: u256) -> u128 {
@@ -504,7 +504,7 @@ mod Dungeons {
         }
     }
 
-    fn generate_dungeon_in(self: @ContractState, seed: u256, size: u128) -> Dungeon {
+    fn generate_dungeon_in(seed: u256, size: u128) -> Dungeon {
         let (layout, structure, points, doors) = generate_layout_and_entities(seed, size);
         let (mut dungeon_name, mut affinity, legendary) = get_name_in(seed);
 
@@ -1019,7 +1019,7 @@ mod Dungeons {
 
     // --------------------------------------------- Render --------------------------------------------
 
-       fn append_number_ascii(mut parts: Array<felt252>, mut num: u128) -> Array<felt252> {
+    fn append_number_ascii(mut parts: Array<felt252>, mut num: u128) -> Array<felt252> {
         let part: Array<felt252> = append_number(ArrayTrait::<felt252>::new(), num);
         let mut length = part.len();
         loop {
@@ -1034,7 +1034,7 @@ mod Dungeons {
 
     fn append_number(mut part: Array<felt252>, mut num: u128) -> Array<felt252> {
         if num != 0 {
-            let temp: u8 = (num % 10).try_into().unwrap();
+            let temp = num % 10;
             part.append((temp + 48).into());
             num /= 10;
             append_number(part, num)
@@ -1043,7 +1043,7 @@ mod Dungeons {
         }
     }
 
-    fn draw(self: @ContractState, dungeon: Dungeon) -> Array<felt252> {
+    fn draw(dungeon: Dungeon) -> Array<felt252> {
         // Hardcoded to save memory: Width = 100
         // Setup SVG and draw our background
         // We write at 100x100 and scale it 5x to 500x500 to avoid safari small rendering
@@ -1059,7 +1059,6 @@ mod Dungeons {
         parts.append('height="100%"fill="#');
         parts.append(get_color(dungeon.environment * 4));
 
-
         parts = draw_name_plate(parts, dungeon.dungeon_name);
         let (start, pixel) = get_width(dungeon.size);
         let mut helper: RenderHelper = RenderHelper {
@@ -1072,16 +1071,14 @@ mod Dungeons {
             last_start: 0
         };
 
-        parts = append(parts, (chunk_dungeon(self, dungeon, ref helper)).span());
-        parts = append(parts, draw_entities(self, dungeon, helper).span());
+        parts = append(parts, (chunk_dungeon(dungeon, ref helper)).span());
+        parts = append(parts, draw_entities(dungeon, helper).span());
         parts.append('</svg>');
 
         parts
     }
 
-    fn chunk_dungeon(
-        self: @ContractState, dungeon: Dungeon, ref helper: RenderHelper
-    ) -> Array<felt252> {
+    fn chunk_dungeon(dungeon: Dungeon, ref helper: RenderHelper) -> Array<felt252> {
         let mut layout = dungeon.layout;
         let mut parts: Array<felt252> = ArrayTrait::new();
 
@@ -1179,9 +1176,7 @@ mod Dungeons {
     }
 
     // Draw each entity as a pixel on the map
-    fn draw_entities(
-        self: @ContractState, dungeon: Dungeon, helper: RenderHelper
-    ) -> Array<felt252> {
+    fn draw_entities(dungeon: Dungeon, helper: RenderHelper) -> Array<felt252> {
         let mut parts: Array<felt252> = ArrayTrait::new();
 
         let (x, y, entity_type) = parse_entities(
@@ -1268,7 +1263,7 @@ mod Dungeons {
         let doors = dungeon.doors.count_bit();
 
         // Generate dungeon
-        let mut output = draw(self, dungeon);
+        let mut output = draw(dungeon);
 
         // Base64 Encode svg and output
         let mut json: Array<felt252> = ArrayTrait::new();
@@ -1346,16 +1341,16 @@ mod Dungeons {
 #[cfg(test)]
 mod test {
     use super::Dungeons::{generate_layout_and_entities, generate_dungeon_in, draw, get_size_in};
+
+    const seed: u256 = 0xab485c48aba348d1e42c3d22e5ec6a706955dcfeed58a238b94da3e0cfe9ef25;
+
     #[test]
     fn test() {
-        let seed = 0x89d73b3f3ae57516591d1b8fe599f24a52996dac09b0dc13f65b14a45f78bc75;
         generate_layout_and_entities(seed, get_size_in(seed));
     }
 
     #[test]
     fn test1() {
-        let state = super::Dungeons::unsafe_new_contract_state();
-        let seed = 0x89d73b3f3ae57516591d1b8fe599f24a52996dac09b0dc13f65b14a45f78bc75;
-        draw(@state, generate_dungeon_in(@state, seed, get_size_in(seed)));
+        draw(generate_dungeon_in(seed, get_size_in(seed)));
     }
 }

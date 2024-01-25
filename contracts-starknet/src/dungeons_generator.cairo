@@ -60,7 +60,7 @@ fn generate_layout_and_entities(seed: u256, size: u128) -> (Pack, u8, Pack, Pack
         points = generate_points(ref settings, floor, 12 / square_root(settings.size - 6));
     } else {
         structure = 1;
-        let cavern: Pack = generate_cavern(ref settings);
+        let cavern = generate_cavern(ref settings);
         let mut count = cavern.count_bit();
 
         layout = cavern;
