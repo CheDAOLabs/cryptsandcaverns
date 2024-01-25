@@ -50,8 +50,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh
 ```shell
 $ scarb --version
 
-scarb 2.4.3 (5dbab1f31 2024-01-04)
-cairo: 2.4.3 (https://crates.io/crates/cairo-lang-compiler/2.4.3)
+scarb 2.5.0 (c531a6e50 2024-01-22)
+cairo: 2.5.0 (https://crates.io/crates/cairo-lang-compiler/2.5.0)
 sierra: 1.4.0
 ```
 
