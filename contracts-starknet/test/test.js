@@ -254,7 +254,7 @@ function buildStarknetContract() {
         // abi
         abi,
         // address
-        "0x01e7917b4ec501d2ba73ca0c8b59510d23c6a959733560e33404573dc1dee2c6",
+        "0x0011c5c9de8359f684891e7fbd761a1a4bc3367bf788e4c8cf320c56d5265354",
         // rpc
         new RpcProvider({ nodeUrl: "https://rpc-sepolia.staging.nethermind.dev" }));
 }

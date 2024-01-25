@@ -8,7 +8,7 @@ For more infomation, you can check [README](https://github.com/CheDAOLabs/crypts
 ## Sepolia Address
 
 ```shell
-0x01ed2846ce929b42f19e151a10779f1b7aa2c06dae0b3e294c13b5b14eea7fea
+0x0011c5c9de8359f684891e7fbd761a1a4bc3367bf788e4c8cf320c56d5265354
 ```
 
 ## Goerli Address
