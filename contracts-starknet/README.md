@@ -8,13 +8,13 @@ For more infomation, you can check [README](https://github.com/CheDAOLabs/crypts
 ## Sepolia Address
 
 ```shell
-0x0011c5c9de8359f684891e7fbd761a1a4bc3367bf788e4c8cf320c56d5265354
+0x0784efc1f9eac06deb7aee92e2569ab113caa62f308b7f1bc17d8c044b3d4f45
 ```
 
 ## Goerli Address
 
 ```shell
-0x078bda44afe0a4d209a568fc6afab25da91dc3b277ee7948832052122c2bc2ab
+0x070017c7a691d60ac06a5905bf782764cbc9c81a97f8f2587a5373ad7bdec886
 ```
 
 # Starknet / Cairo

@@ -21,7 +21,7 @@
       <!--      <br/>-->
       <!--    <img alt="Vue logo" src="./assets/logo.png">-->
       <el-input-number v-model="token_id" :min="1" :max="1000000" @change="handleChange" />
-
+      <!-- <div style="color: white;font-size: 20px;font-family: VT323;margin-top: 10px">total {{ last_id }}</div> -->
       <div style="color: white;font-size: 24px;font-family: VT323;margin-top: 10px"> {{ name }}</div>
       <div class="container"
         style="  overflow: hidden;margin-top: 10px;background-color: black;color:white;border: 1px;border-color:white;display: flex;align-items: center;    justify-content: center;"
@@ -46,7 +46,7 @@ import { connect } from "@argent/get-starknet"
 import { useRoute } from 'vue-router';
 import abi from "./abi.json";
 
-const address = "0x056cf8242380606b9bb081214e13928d9d0da30ed78a62ba22eba858bbae3aca";
+const address = "0x070017c7a691d60ac06a5905bf782764cbc9c81a97f8f2587a5373ad7bdec886";
 
 export default {
   name: 'App',
@@ -55,7 +55,7 @@ export default {
   },
   mounted() {
     this.provider = new Provider({
-      rpc: { nodeUrl: "https://rpc-sepolia.staging.nethermind.dev" }
+      rpc: { nodeUrl: "https://starknet-testnet.public.blastapi.io" }
     });
     console.log("provider", this.provider);
 
@@ -81,7 +81,7 @@ export default {
       wallet_address: null,
       account: null,
       provider: null,
-      token_id: 1
+      token_id: 1,
     }
   },
   methods: {

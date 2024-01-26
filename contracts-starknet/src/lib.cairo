@@ -254,7 +254,7 @@ mod Dungeons {
 
     // ------ ERC721 -------
 
-    #[abi(embed_v0)]
+    #[external(v0)]
     fn mint(ref self: ContractState) {
         // assert(self.last_mint.read() < 9000, 'Token sold out');
         // assert(!self.restricted.read(), 'Dungeon is restricted');
@@ -462,6 +462,9 @@ mod Dungeons {
             let seed = if id < 2000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
+                        // goerli
+                        // 0x072e8c6ba12603ce17059633bfadcd74882d2b23798e5d32afa1fb18953f4ec6
+                        // sepolia
                         0x075ea500c4a2834406d979114a4c1be6fa0970869225b25de1672ecbb6d891ea
                     >()
                 }
@@ -469,6 +472,9 @@ mod Dungeons {
             } else if id < 4000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
+                        // goerli
+                        // 0x063540483c4518cb39cbf726c3189970d7dced3d48a3b27ebc15287c49f44b89
+                        // sepolia
                         0x06f424fac78d406bd85368ee3fbcf7fd841a01a27466cfd025fa678050077e7f
                     >()
                 }
@@ -476,6 +482,9 @@ mod Dungeons {
             } else if id < 6000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
+                        // goerli
+                        // 0x043e183a544e31d5153579ab4c248b9b3e95271ac712f134602764927c44632e
+                        // sepolia
                         0x01587c6e9e11ff05105ee6589d75e365f8970867f381098edf36bc3c4a948198
                     >()
                 }
@@ -483,6 +492,9 @@ mod Dungeons {
             } else if id < 8000 {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
+                        // goerli
+                        // 0x06f3d135ef77a047d93d1eeff37b4454d808dc641ef35068dd5fb7309a8e84a9
+                        // sepolia
                         0x06847a741fd3a804d84dc41a3a5bfb6d4ffe4e1c620e2d71b80ee40157faeda1
                     >()
                 }
@@ -490,6 +502,9 @@ mod Dungeons {
             } else {
                 SeedTraitDispatcher {
                     contract_address: contract_address_const::<
+                        // goerli
+                        // 0x02801987e7bac5a597da1c573edd1beffe1daf2dc477c923e8d65b856cc29aeb
+                        // sepolia
                         0x03facb2063078c16833d0649bf4d9f7079bb5dc7fdc7d19337b5cb5fdc76c637
                     >()
                 }
