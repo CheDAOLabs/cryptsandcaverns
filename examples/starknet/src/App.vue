@@ -1,7 +1,7 @@
 <template>
   <div id="app">
 
-    <el-card class="box-card" style="width: 400px;margin-left: auto;margin-right: auto;margin-top: 50px">
+    <el-card class="box-card" style="width: 1100px;margin-left: auto;margin-right: auto;margin-top: 50px">
       <template #header>
         <div class="card-header">
           <span style="font-size: 30px">C&C Example</span>
@@ -22,16 +22,16 @@
       <!--    <img alt="Vue logo" src="./assets/logo.png">-->
       <el-input-number v-model="token_id" :min="1" :max="1000000" @change="handleChange" />
       <!-- <div style="color: white;font-size: 20px;font-family: VT323;margin-top: 10px">total {{ last_id }}</div> -->
-      <div style="color: white;font-size: 24px;font-family: VT323;margin-top: 10px"> {{ name }}</div>
+      <div style="color: white;font-size: 24px;font-family: VT323;margin-top: 20px;margin-bottom: 10px;"> {{ name }}</div>
       <div class="container"
-        style="  overflow: hidden;margin-top: 10px;background-color: black;color:white;border: 1px;border-color:white;display: flex;align-items: center;    justify-content: center;"
+        style="float: left;  overflow: hidden;margin-top: 10px;margin-bottom: 30px;background-color: black;color:white;border: 1px;border-color:white;display: flex;align-items: center;    justify-content: center;"
         v-loading="loading">
         <pre style="color: white">{{ dungeon_string }}</pre>
       </div>
-      <div class="container" style="background-color: red;margin-top: 10px" v-loading="loading_svg">
+      <div class="container" style="float:right;background-color: red;margin-top: 10px; margin-bottom: 30px;" v-loading="loading_svg">
         <div v-html="svg"></div>
       </div>
-      <div style="margin-top: 10px">
+      <div style="margin-bottom: 10px">
         <el-button type="danger" plain @click="mint">MINT</el-button>
       </div>
     </el-card>
@@ -281,8 +281,8 @@ body {
   /*display: flex;*/
   /*justify-content: center;*/
   /*align-items: center;*/
-  width: 300px;
-  height: 300px;
+  width: 500px;
+  height: 500px;
   margin-left: auto;
   margin-right: auto;
 }
