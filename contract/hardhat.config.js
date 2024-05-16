@@ -45,14 +45,19 @@ module.exports = {
     },
     starknetLocal: {
       url: "http://127.0.0.1:5000"
-    }
+    },
+    sepolia: {
+      url: "https://sepolia.infura.io/v3/${process.env.alchemy_key}",
+       // accounts: [process.env.WALLET_PRIVATE_KEY],
+      // gasPrice: 125000000000
+    },
   },
-  cairo: {
-    venv: "active",
-  },
-  mocha: {
-    starknetNetwork: "starknetLocal"
-  },
+  // cairo: {
+  //   venv: "active",
+  // },
+  // mocha: {
+  //   starknetNetwork: "starknetLocal"
+  // },
   etherscan: {
     apiKey: process.env.etherscan_key,
   },
@@ -64,7 +69,7 @@ module.exports = {
     path: './data/abi',
     clear: true,
     flat: true,
-    // only: ['Dungeons', 'Loot', 'dungeonsRender', 'dungeonsSeeder', 'dungeonsGenerator', 'IDungeons', 'IDungeonsGenerator', 'IDungeonsRender', 'IDungeonsSeeder'],
+    only: ['Dungeons', 'Loot', 'dungeonsRender', 'dungeonsSeeder', 'dungeonsGenerator', 'IDungeons', 'IDungeonsGenerator', 'IDungeonsRender', 'IDungeonsSeeder'],
     spacing: 2
   }
 };

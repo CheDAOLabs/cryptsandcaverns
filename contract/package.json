@@ -20,7 +20,8 @@
     "node": "npx hardhat node",
     "buildstarknet": "npx hardhat starknet-compile ./contracts/starknet --cairo-path ./contracts/starknet",
     "teststarknet": "npx hardhat test",
-    "nodestarknet": "starknet-devnet"
+    "nodestarknet": "starknet-devnet",
+    "deployfloot": "npx hardhat run ./deploy/deploy-floot.js --network sepolia"
   },
   "repository": {
     "type": "git",
@@ -29,7 +30,7 @@
   "author": "threepwave",
   "license": "CC-0",
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@nomiclabs/hardhat-etherscan": "^2.1.7",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@nomiclabs/hardhat-web3": "^2.0.0",
@@ -38,7 +39,7 @@
     "@symblox/hardhat-abi-gen": "^0.2.0",
     "chai": "^4.3.4",
     "ethereum-waffle": "^3.4.0",
-    "ethers": "^5.4.6",
+    "ethers": "^5.7.2",
     "hardhat": "^2.6.4",
     "hardhat-deploy": "^0.9.8",
     "hardhat-deploy-ethers": "^0.3.0-beta.11",
