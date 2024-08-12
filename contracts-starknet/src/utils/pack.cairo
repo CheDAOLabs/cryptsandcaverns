@@ -10,7 +10,8 @@ struct Pack {
 
 #[generate_trait]
 impl PackImpl of PackTrait {
-    // u256 -> felt252, u256 must <= 0x800000000000011000000000000000000000000000000000000000000000000
+    // u256 -> felt252, u256 must <=
+    // 0x800000000000011000000000000000000000000000000000000000000000000
     fn new() -> Pack {
         Pack { first: 0, second: 0, third: 0, }
     }
@@ -58,7 +59,8 @@ impl PackImpl of PackTrait {
     ///
     /// # Returns
     ///
-    /// A boolean value indicating whether the bit at the specified position is set (`true`) or not (`false`).
+    /// A boolean value indicating whether the bit at the specified position is set (`true`) or not
+    /// (`false`).
     fn get_bit(self: Pack, position: u128) -> bool {
         assert(position < 625, 'invalid position');
         if position < 248 {
@@ -70,7 +72,8 @@ impl PackImpl of PackTrait {
         }
     }
 
-    /// Adds the corresponding bits of two `Pack` values and stores the result in the current `Pack` instance.
+    /// Adds the corresponding bits of two `Pack` values and stores the result in the current `Pack`
+    /// instance.
     ///
     /// # Arguments
     ///
@@ -91,7 +94,8 @@ impl PackImpl of PackTrait {
         self.third = result.try_into().expect('add bit overflow');
     }
 
-    /// Subtracts the corresponding bits of two `Pack` values and stores the result in the current `Pack` instance.
+    /// Subtracts the corresponding bits of two `Pack` values and stores the result in the current
+    /// `Pack` instance.
     ///
     /// # Arguments
     ///
@@ -100,7 +104,8 @@ impl PackImpl of PackTrait {
     ///
     /// # Panics
     ///
-    /// This function will panic if the subtraction of any bit overflows the maximum value of `u256`.
+    /// This function will panic if the subtraction of any bit overflows the maximum value of
+    /// `u256`.
     fn subtract_bit(ref self: Pack, other: Pack) {
         let mut result: u256 = self.first.into() & ~other.first.into();
         self.first = result.try_into().expect('sub bit overflow');
@@ -151,8 +156,8 @@ mod test {
     use debug::PrintTrait;
 
     #[test]
-    #[ignore]
-    #[available_gas(3000000)]
+    // #[ignore]
+    // #[available_gas(3000000)]
     fn test() {
         let mut pack: Pack = Pack { first: 0, second: 0, third: 0 };
         pack.set_bit(66);

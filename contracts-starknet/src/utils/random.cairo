@@ -35,8 +35,8 @@ mod test {
     use super::random;
 
     #[test]
-    #[ignore]
-    #[available_gas(30000000)]
+    // #[ignore]
+    // #[available_gas(30000000)]
     fn test() {
         let seed: u256 =
             47644144660693649943980215435560498623172148321825190670936003990961659435532;

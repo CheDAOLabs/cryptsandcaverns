@@ -1282,8 +1282,8 @@ mod test {
     use super::get_pow;
 
     #[test]
-    #[ignore]
-    #[available_gas(3000000)]
+    // #[ignore]
+    // #[available_gas(3000000)]
     fn test_pow() {
         assert(get_pow(0) == 0x1, 'pow 0');
         assert(get_pow(1) == 0x2, 'pow 1');
@@ -1629,12 +1629,12 @@ mod test {
             get_pow(252) == 0x1000000000000000000000000000000000000000000000000000000000000000,
             'pow 252'
         );
-    // todo
+        // todo
     }
 }
 // ------------------------------ generate script in Java ------------------------------
 
-// public class Main {
+// lic class Main {
 
 //     static String ifString = "if ";
 //     static String elseString = "else ";
@@ -1651,7 +1651,7 @@ mod test {
 //     static String mid = ", 'pow ";
 //     static String end = "'); ";
 
-//     public static void main(String[] args) {
+//     lic static void main(String[] args) {
 
 //         // String result = circle("", 0, 252);
 
@@ -1661,7 +1661,7 @@ mod test {
 
 //     }
 
-//     public static String testCircle(String result, int count, String pow, int limit) {
+//     lic static String testCircle(String result, int count, String pow, int limit) {
 
 //         result += assertString + count + ll + equals + pre + pow + mid + count + end;
 
@@ -1683,14 +1683,16 @@ mod test {
 
 //     }
 
-//     public static String circle(String result, int low, int high) {
+//     lic static String circle(String result, int low, int high) {
 
 //         int dis = high - low;
 //         if (dis > 1) {
-//             result += circle(ifString + position + smallerThan + (dis / 2 + low) + left, low, (dis / 2 + low)) + right +
+//             result += circle(ifString + position + smallerThan + (dis / 2 + low) + left, low,
+//             (dis / 2 + low)) + right +
 //                     circle(elseString + left, (dis / 2 + low + 1), high) + right;
 //         } else if (dis == 1) {
-//             result += ifString + position + equals + low + left + pow + low + right + elseString + left + pow + high + right;
+//             result += ifString + position + equals + low + left + pow + low + right + elseString
+//             + left + pow + high + right;
 //         } else {
 //             result += pow + low;
 //         }

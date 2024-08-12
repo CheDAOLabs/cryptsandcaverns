@@ -1,12 +1,15 @@
 [package]
 name = "cc_starknet"
-version = "0.1.3"
-cairo-version = "2.5.4"
+version = "0.1.4"
+cairo-version = "2.7.0"
 
 [dependencies]
-starknet = "2.5.4"
-openzeppelin = { git = "https://github.com/orangeryang/cairo-contracts.git" }
-components = { git = "https://github.com/orangeryang/cairo-component.git" }
+starknet = "2.7.0"
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.15.0" }
+# components = { git = "https://github.com/orangeryang/cairo-component.git" }
+
+[dev-dependencies]
+cairo_test = "2.7.0"
 
 [[target.starknet-contract]]
 # sierra = true

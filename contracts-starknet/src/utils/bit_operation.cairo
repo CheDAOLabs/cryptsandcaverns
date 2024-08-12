@@ -1,3 +1,4 @@
+use core::num::traits::OverflowingMul;
 use core::traits::{Into, TryInto};
 use super::pow::get_pow;
 
@@ -19,7 +20,7 @@ impl BitOperation of BitOperationTrait {
         if count > 255 {
             return 0;
         }
-        let (result, _) = integer::u256_overflow_mul(self, get_pow(count));
+        let (result, _) = self.overflowing_mul(get_pow(count));
         result
     }
 
@@ -50,8 +51,8 @@ mod test {
     use super::BitOperationTrait;
 
     #[test]
-    #[ignore]
-    #[available_gas(300000000000000000)]
+    // #[ignore]
+    // #[available_gas(300000000000000000)]
     fn test() {
         let mut a: u256 = 1;
         let mut b: u128 = 32;

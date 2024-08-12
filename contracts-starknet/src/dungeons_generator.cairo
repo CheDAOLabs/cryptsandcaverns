@@ -540,8 +540,8 @@ mod test {
     use debug::PrintTrait;
 
     #[test]
-    #[ignore]
-    #[available_gas(30000000)]
+    // #[ignore]
+    // #[available_gas(30000000)]
     fn test_set_bit() {
         let mut map: Pack = PackTrait::new();
         map.first = 2;
@@ -562,16 +562,16 @@ mod test {
     }
 
     #[test]
-    #[ignore]
-    #[available_gas(30000000)]
+    // #[ignore]
+    // #[available_gas(30000000)]
     fn test_sqr() {
         assert(square_root(17) == 4, 'compute square root of 17');
         assert(square_root(24) == 4, 'compute square root of 24');
     }
 
     #[test]
-    #[ignore]
-    #[available_gas(300000000000000)]
+    // #[ignore]
+    // #[available_gas(300000000000000)]
     fn test_generate_room() {
         {}
         // tokenId 5678 cavern type
@@ -612,8 +612,8 @@ mod test {
                 && map.third == 0x0,
             'room error'
         );
-        let (x_array, y_array, t_array) = get_entities(seed, size);
-        print_array(@x_array, @y_array, @t_array);
+        // let (x_array, y_array, t_array) = get_entities(seed, size);
+        // print_array(@x_array, @y_array, @t_array);
     }
 
     fn print_map(map: Pack, structure: u8) {

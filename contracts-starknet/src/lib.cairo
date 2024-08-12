@@ -2,7 +2,7 @@ mod dungeons_generator;
 mod utils;
 mod interface;
 
-// --------------------------------------------- interface -------------------------------------------
+// ------------------------------------------- interface -----------------------------------------
 
 use starknet::ContractAddress;
 
@@ -34,12 +34,12 @@ trait IERC721EnumerableCamelOnly<TContractState> {
     fn tokenOfOwnerByIndex(self: @TContractState, owner: ContractAddress, index: u256) -> u256;
 }
 
-// -------------------------------------------- Contract --------------------------------------------
+// ------------------------------------------ Contract ------------------------------------------
 
 #[starknet::contract]
 mod Dungeons {
     //
-    // ------------------------------------------ Imports -------------------------------------------
+    // ---------------------------------------- Imports -----------------------------------------
 
     use core::array::ArrayTrait;
     use openzeppelin::introspection::interface::ISRC5;
@@ -51,7 +51,8 @@ mod Dungeons {
     use starknet::{
         ContractAddress, SyscallResult, info::get_caller_address,
         storage_access::{Store, StorageAddress, StorageBaseAddress},
-        contract_address_try_from_felt252, EthAddress, ClassHash, contract_address_const
+        contract_address_try_from_felt252, EthAddress, ClassHash, contract_address_const,
+        storage::{Map, StoragePathEntry, StorageMapReadAccess, StorageMapWriteAccess}
     };
     use super::interface::{
         CryptsAndCavernsTrait, CryptsAndCavernsTraitDispatcher,
@@ -64,22 +65,22 @@ mod Dungeons {
         dungeons_generator::{generate_layout_and_entities, parse_entities}
     };
 
-    // ------------------------------------------ Components -----------------------------------------
+    // ---------------------------------------- Components ---------------------------------------
 
     use openzeppelin::introspection::src5::SRC5Component;
-    use openzeppelin::token::erc721::ERC721Component;
+    use openzeppelin::token::erc721::{ERC721Component, ERC721HooksEmptyImpl};
     use openzeppelin::token::erc721::ERC721Component::InternalTrait as erc721Internal;
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::access::ownable::OwnableComponent::InternalTrait as ownableInternal;
-    use components::upgradeable::upgradeable::UpgradeableComponent;
-    use components::upgradeable::upgradeable::UpgradeableComponent::InternalTrait as upgradeableInternal;
+    use openzeppelin::upgrades::upgradeable::UpgradeableComponent;
+    use openzeppelin::upgrades::upgradeable::UpgradeableComponent::InternalTrait as upgradeableInternal;
 
     component!(path: ERC721Component, storage: erc721, event: ERC721Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
 
-    // ------------------------------------------- Structs -------------------------------------------
+    // ----------------------------------------- Structs -----------------------------------------
 
     #[derive(Copy, Drop, Serde)]
     struct Dungeon {
@@ -141,37 +142,37 @@ mod Dungeons {
         starknet_account: ContractAddress
     }
 
-    // ------------------------------------------- Storage -------------------------------------------
+    // ----------------------------------------- Storage -----------------------------------------
 
     #[storage]
     struct Storage {
         // -------------- dungeons ----------------
-        // dungeons: LegacyMap::<u128, Dungeon>,
+        // dungeons: Map<u128, Dungeon>,
         // price: u256,
         // loot:ContractAddress,
-        seeds: LegacyMap::<u128, u256>,
+        seeds: Map<u128, u256>,
         last_mint: u128,
         claimed: u128,
         restricted: bool,
         // --------------- seeder ----------------
-        PREFIX: LegacyMap::<u128, felt252>,
-        LAND: LegacyMap::<u128, felt252>,
-        SUFFIXES: LegacyMap::<u128, felt252>,
-        UNIQUE: LegacyMap::<u128, felt252>,
-        PEOPLE: LegacyMap::<u128, felt252>,
+        PREFIX: Map<u128, felt252>,
+        LAND: Map<u128, felt252>,
+        SUFFIXES: Map<u128, felt252>,
+        UNIQUE: Map<u128, felt252>,
+        PEOPLE: Map<u128, felt252>,
         // --------------- render ----------------
         // Array contains sets of 4 colors:
         // 0 = bg, 1 = wall, 2 = door, 3 = point
         // To calculate, multiply environment (int 0-5) by 4 and add the above numbers.
-        colors: LegacyMap::<u8, felt252>,
+        colors: Map<u8, felt252>,
         // Names mapped to the above colors
-        environmentName: LegacyMap::<u8, felt252>,
+        environmentName: Map<u8, felt252>,
         // -------------- enumerable -------------
-        owned_tokens: LegacyMap::<(ContractAddress, u128), u128>,
-        owned_token_index: LegacyMap::<u128, u128>,
+        owned_tokens: Map<(ContractAddress, u128), u128>,
+        owned_token_index: Map<u128, u128>,
         // -------------- cross ------------------
         relater: felt252,
-        eth_owner: LegacyMap::<u128, felt252>,
+        eth_owner: Map<u128, felt252>,
         // -------------- component --------------
         #[substorage(v0)]
         src5: SRC5Component::Storage,
@@ -183,15 +184,15 @@ mod Dungeons {
         upgradeable: UpgradeableComponent::Storage,
     }
 
-    // ------------------------------------------- Upgrade -------------------------------------------
+    // ----------------------------------------- Upgrade -----------------------------------------
 
     #[abi(embed_v0)]
     fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
         self.ownable.assert_only_owner();
-        self.upgradeable._upgrade(new_class_hash);
+        self.upgradeable.upgrade(new_class_hash);
     }
 
-    // ------------------------------------------- Dungeon -------------------------------------------
+    // ----------------------------------------- Dungeon -----------------------------------------
 
     // ---- enumerable -----
 
@@ -265,7 +266,7 @@ mod Dungeons {
         self.last_mint.write(token_id);
         self.seeds.write(token_id, seed);
 
-        self.erc721._mint(user, token_id.into());
+        self.erc721.mint(user, token_id.into());
 
         let index = self.erc721.balance_of(user);
         self.owned_tokens.write((user, index.try_into().unwrap()), token_id);
@@ -349,22 +350,22 @@ mod Dungeons {
 
     #[abi(embed_v0)]
     impl ERC721MetadataImpl of IERC721Metadata<ContractState> {
-        fn name(self: @ContractState) -> felt252 {
+        fn name(self: @ContractState) -> ByteArray {
             self.erc721.name()
         }
 
-        fn symbol(self: @ContractState) -> felt252 {
+        fn symbol(self: @ContractState) -> ByteArray {
             self.erc721.symbol()
         }
 
-        fn token_uri(self: @ContractState, token_id: u256) -> felt252 {
+        fn token_uri(self: @ContractState, token_id: u256) -> ByteArray {
             self.erc721.token_uri(token_id)
         }
     }
 
     #[abi(embed_v0)]
     impl ERC721MetadataCamelOnlyImpl of IERC721MetadataCamelOnly<ContractState> {
-        fn tokenURI(self: @ContractState, tokenId: u256) -> felt252 {
+        fn tokenURI(self: @ContractState, tokenId: u256) -> ByteArray {
             self.erc721.token_uri(tokenId)
         }
     }
@@ -538,11 +539,11 @@ mod Dungeons {
 
     fn is_valid(self: @ContractState, token_id: u256) {
         if token_id > 9000 {
-            assert(self.erc721._exists(token_id), 'Valid token');
+            assert(self.erc721.exists(token_id), 'Valid token');
         }
     }
 
-    // --------------------------------------------- Seeder --------------------------------------------
+    // ------------------------------------------- Seeder ------------------------------------------
 
     // for testnet only
     fn generate_seed(token_id: u256) -> u256 {
@@ -1032,7 +1033,7 @@ mod Dungeons {
         }
     }
 
-    // --------------------------------------------- Render --------------------------------------------
+    // ------------------------------------------- Render ------------------------------------------
 
     fn append_number_ascii(mut parts: Array<felt252>, mut num: u128) -> Array<felt252> {
         let part: Array<felt252> = append_number(ArrayTrait::<felt252>::new(), num);
@@ -1340,11 +1341,13 @@ mod Dungeons {
 
         json
     }
-    // ------------------------------------------ Constructor ------------------------------------------
+
+
+    // ---------------------------------------- Constructor ----------------------------------------
 
     #[constructor]
     fn constructor(ref self: ContractState, owner: ContractAddress) {
-        self.erc721.initializer('C&C', 'C&C');
+        self.erc721.initializer("C&C", "C&C", "");
 
         self.restricted.write(false);
         self.last_mint.write(9000);

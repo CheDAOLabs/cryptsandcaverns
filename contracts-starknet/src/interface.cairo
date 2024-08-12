@@ -3,25 +3,26 @@ use super::Dungeons::{Dungeon, Pack};
 
 #[starknet::interface]
 trait CryptsAndCavernsTrait<TContractState> {
-    // // trait IERC721Metadata<TContractState> 
+    // // trait IERC721Metadata<TContractState>
     // fn name(self: @TContractState) -> felt252;
     // fn symbol(self: @TContractState) -> felt252;
     // fn token_uri(self: @TContractState, token_id: u256) -> Array<felt252>;
 
-    // // trait IERC721MetadataCamelOnly<TContractState> 
+    // // trait IERC721MetadataCamelOnly<TContractState>
     // fn tokenURI(self: @TContractState, tokenId: u256) -> Array<felt252>;
 
-    // // trait IERC721Enumerable<TContractState> 
+    // // trait IERC721Enumerable<TContractState>
     // fn total_supply(self: @TContractState) -> u256;
     // fn token_by_index(self: @TContractState, index: u256) -> u256;
-    // fn token_of_owner_by_index(self: @TContractState, owner: ContractAddress, index: u256) -> u256;
+    // fn token_of_owner_by_index(self: @TContractState, owner: ContractAddress, index: u256) ->
+    // u256;
 
-    // // trait IERC721EnumerableCamelOnly<TContractState> 
+    // // trait IERC721EnumerableCamelOnly<TContractState>
     // fn totalSupply(self: @TContractState) -> u256;
     // fn tokenByIndex(self: @TContractState, index: u256) -> u256;
     // fn tokenOfOwnerByIndex(self: @TContractState, owner: ContractAddress, index: u256) -> u256;
 
-    // // trait IERC721<TContractState> 
+    // // trait IERC721<TContractState>
     // fn balance_of(self: @TContractState, account: ContractAddress) -> u256;
     // fn owner_of(self: @TContractState, token_id: u256) -> ContractAddress;
     // fn transfer_from(
@@ -41,7 +42,7 @@ trait CryptsAndCavernsTrait<TContractState> {
     //     self: @TContractState, owner: ContractAddress, operator: ContractAddress
     // ) -> bool;
 
-    // // trait IERC721CamelOnly<TContractState> 
+    // // trait IERC721CamelOnly<TContractState>
     // fn balanceOf(self: @TContractState, account: ContractAddress) -> u256;
     // fn ownerOf(self: @TContractState, tokenId: u256) -> ContractAddress;
     // fn transferFrom(
